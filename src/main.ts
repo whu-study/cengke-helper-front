@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import './style.css'
 import App from './App.vue'
 import router from "@/router/index.ts";
+import "preline/preline";
 import {setupStore} from "@/store";
 
 const app = createApp(App)

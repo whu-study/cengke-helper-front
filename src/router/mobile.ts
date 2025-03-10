@@ -1,20 +1,20 @@
-import {RouteRecordRaw} from "vue-router";
+import type {RouteRecordRaw} from "vue-router";
 
 
 export const routes:Array<RouteRecordRaw> = [
     {
         path: '/',
-        component: () => import('@/view/mobile/Test.vue'),
+        component: () => import('@/view/mobileed/HelperCollapse.vue'),
         meta: {hidden: true}
     },
     {
         path: '/tree-hole',
-        component: () => import('@/view/mobile/Test.vue'),
+        component: () => import('@/view/mobileed/Test.vue'),
         meta: {hidden: true}
     },
     {
         path: '/test',
-        component: () => import('@/view/mobile/Test.vue'),
+        component: () => import('@/view/mobileed/Test.vue'),
         meta: {hidden: true}
     }
 ]

@@ -1,7 +1,5 @@
 import {ref} from "vue";
-import {Items} from "@/types/Items";
-import {webGetTeachInfos} from "@/api/req.ts";
-import {teachInfosCacheKey} from "@/api/globalConst.ts";
+import type {Items} from "@/types/Items";
 
 export const globalDepartments = ref<string[]>([
     "文理学部",
@@ -24,7 +22,7 @@ export const GlobalTeachInfosObj = (() => {
     )
 
     function getBuildings(department: string): string[] {
-        return departmentBuildingMap.value.get(department)!
+        return ["111","222","222","222","222","222","222","222","111"]
     }
 
     const apiErrorMsg = ref<string>('')
@@ -36,7 +34,15 @@ export const GlobalTeachInfosObj = (() => {
 
     function getTeachInfos(department: string, building: string): Items.TeachInfo[] {
         if (!teachInfos.value.get(department)) {
-            return []
+            return [{
+                room: "string",
+                faculty: "string;",
+                courseName: "string;",
+                teacherName: "string;",
+                teacherTitle: "string;",
+                courseTime: "string;",
+                courseType: "string;",
+            }]
         }
         console.log(teachInfos.value.get(department)!.get(building)!)
 
@@ -64,24 +70,24 @@ export const GlobalTeachInfosObj = (() => {
         }
 
 
-        webGetTeachInfos()
-            .then((data) => {
-                apiErrorMsg.value = ''
-                if (data.length != 5) {
-                    console.log("断言失败，数据长度应当为5！")
-                    apiErrorMsg.value = '数据长度不为5'
-                    return
-                }
-
-                localStorage.setItem(teachInfosCacheKey, JSON.stringify(data))
-                console.log("get teach infos from api")
-
-                initData(data)
-            })
-            .catch((err) => {
-                apiErrorMsg.value = '获取教学信息失败' + err
-                console.log(err)
-            })
+        // webGetTeachInfos()
+        //     .then((data) => {
+        //         apiErrorMsg.value = ''
+        //         if (data.length != 5) {
+        //             console.log("断言失败，数据长度应当为5！")
+        //             apiErrorMsg.value = '数据长度不为5'
+        //             return
+        //         }
+        //
+        //         localStorage.setItem(teachInfosCacheKey, JSON.stringify(data))
+        //         console.log("get teach infos from api")
+        //
+        //         initData(data)
+        //     })
+        //     .catch((err) => {
+        //         apiErrorMsg.value = '获取教学信息失败' + err
+        //         console.log(err)
+        //     })
     }
 
     const initData = (data: Items.BuildingTeachInfos[][]) => {
