@@ -9,7 +9,7 @@ const buildingName = defineProps({
 </script>
 
 <template>
-  <el-avatar shape="square" size="small"> 计 </el-avatar>
+  <el-avatar shape="square" size="small"> {{buildingName}} </el-avatar>
 </template>
 
 <style scoped>

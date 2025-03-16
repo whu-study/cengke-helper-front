@@ -4,7 +4,6 @@
          ref="scrollContent"
          @scroll="handleScroll">
 
-
       <div class="snap-always snap-center shrink-0 first:pl-0 last:pr-0 w-[100%] mb-5"
            v-for="i in totalPage">
         <!--选择项区-->
@@ -13,9 +12,9 @@
           <template #default="scope">
             <div class="segmented-item-wrapper">
               <div class="segmented-icon">
-                  {{scope.item[0]}}
+                {{ scope.item.label[0] }}{{value}}
               </div>
-              <div class="segmented-text">{{ scope.item }}</div>
+              <div class="segmented-text">{{ scope.item.label }}</div>
             </div>
           </template>
         </el-segmented>
@@ -34,23 +33,64 @@
     </div>
 
   </div>
+
+  <div class="course-list" :style="{ transform: `translateX(${-value * 100}%)` }">
+    <div v-for="i in buildings.length">
+      <div class="w-[100vw]" :style="{maxHeight: i}" :id="i">
+        {{i-1}}
+<!--        <BuildingIcon :buildingName="value"/>-->
+        {{totalPage}}
+
+        <div v-if="i===3">
+          1
+          1
+          1
+          1
+        </div>
+      </div>
+    </div>
+  </div>
+
 </template>
 <script lang="ts" setup>
-import {computed, onMounted, ref} from 'vue'
-import {
-  Apple,
-  Cherry,
-  Grape,
-  Orange,
-  Pear,
-  Watermelon,
-} from '@element-plus/icons-vue'
+import {computed, onMounted, ref, watch} from 'vue'
 import BuildingIcon from "@/view/mobileed/BuildingIcon.vue";
 
 const scrollContent = ref()
-const buildings = ref<string[]>([])
+const buildings = ref([])
 onMounted(() => {
-  buildings.value = null || ["计11", "111", "计22", "333", "444", "555", "666", "777", "888", "999","1010"]
+  buildings.value = [
+    {
+      value: 1,
+      label: "计11"
+    },
+    {
+      value: 2,
+      label: "计11"
+    },
+    {
+      value: 3,
+      label: "计11"
+    },
+    {
+      value: 4,
+      label: "计11"
+    },
+    {
+      value: 5,
+      label: "计11"
+    },
+    {
+      value: 6,
+      label: "计11"
+    },
+    {
+      value: 7,
+      label: "计11"
+    },
+  ]
+  let count = 0;
+  buildings.value.forEach((t) => {t.value = count++;})
 })
 
 const pageSize = 5;
@@ -76,7 +116,15 @@ const onClickProcess = (index: number) => {
   scrollContent.value.scrollLeft = scrollContent.value.scrollWidth * index / totalPage.value
 }
 
-const value = ref('计11')
+const value = ref(0)
+
+const contentHeight = ref('1')
+watch(value, (newValue, oldValue) => {
+  console.log(newValue)
+  const clientHeight = document.getElementsByClassName('w-[100vw]').item(0).clientHeight;
+  console.log(clientHeight)
+  contentHeight.value = newValue + 'rem'
+})
 
 </script>
 
@@ -116,5 +164,13 @@ const value = ref('计11')
     color: #bc6c25;
   }
 
+}
+
+
+.course-list {
+  display: flex;
+  flex-direction: row;
+  transition: transform 0.5s ease; /* 添加过渡效果，并使用缓动函数 */
+  height: v-bind(contentHeight);
 }
 </style>

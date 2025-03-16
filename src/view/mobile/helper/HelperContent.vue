@@ -111,7 +111,7 @@ const onClickIcon = (index: number) => {
           <div class="grid grid-cols-5 pt-5 pb-5  border-l-0.5 border-r-0.5">
             <div v-for="(building,index) in partOfBuildings(i-1)" class="text-center transition-all">
               <div :style="{
-              'border-color': (i-1)*5+index===buildingIndex?buildingIconColor:'rgba(255, 255, 255, 0.0)',
+            'border-color': (i-1)*5+index===buildingIndex?buildingIconColor:'rgba(255, 255, 255, 0.0)',
             'border-width':'2.5px',
             'border-radius':'20%',
             'background-color':(i-1)*5+index===buildingIndex?choseBoxColor:'rgba(255, 255, 255, 0.0)'}"
