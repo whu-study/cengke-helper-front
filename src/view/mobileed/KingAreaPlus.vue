@@ -18,15 +18,6 @@
             </div>
           </template>
         </el-segmented>
-<!--        <div class="grid grid-cols-5 gap-0 text-center">-->
-<!--          <div-->
-<!--              v-for="(item, index) in buildings.slice((i-1)*pageSize,Math.min((i-1)*pageSize+5),buildings.length)"-->
-<!--              :key="index"-->
-<!--          >-->
-<!--            {{ item.label }}-->
-<!--          </div>-->
-<!--        </div>-->
-
       </div>
     </div>
 
@@ -45,17 +36,17 @@
 
   <div class="course-list" :style="{ transform: `translateX(${-value * 100}%)` }">
     <div v-for="i in buildings.length">
-      <div class="w-[100vw]">
-<!--        {{i-1}}-->
-<!--        <BuildingIcon :buildingName="value"/>-->
-<!--        {{totalPage}}-->
+      <div class="w-[100vw]" :style="{maxHeight: i}" :id="i">
+        {{i-1}}
+        <!--        <BuildingIcon :buildingName="value"/>-->
+        {{totalPage}}
 
-<!--        <div v-if="i===3">-->
-<!--          1-->
-<!--          1-->
-<!--          1-->
-<!--          1-->
-<!--        </div>-->
+        <div v-if="i===3">
+          1
+          1
+          1
+          1
+        </div>
       </div>
     </div>
   </div>
@@ -128,12 +119,12 @@ const onClickProcess = (index: number) => {
 const value = ref(0)
 
 const contentHeight = ref('1')
-watch(value, (newValue, oldValue) => {
-  console.log(newValue)
-  const clientHeight = document.getElementsByClassName('w-[100vw]').item(newValue).clientHeight;
-  console.log(clientHeight)
-  contentHeight.value = clientHeight+ 'px'
-})
+// watch(value, (newValue, oldValue) => {
+//   console.log(newValue)
+//   const clientHeight = document.getElementsByClassName('w-[100vw]').item(0).clientHeight;
+//   console.log(clientHeight)
+//   contentHeight.value = newValue + 'rem'
+// })
 
 </script>
 
@@ -161,18 +152,17 @@ watch(value, (newValue, oldValue) => {
     align-content: center;
     vertical-align: middle;
     line-height: 5vw;
-    //height: 10vw;
-    //color: #bc6c25;
-    //border: #e8b57f 1px solid;
-    //background: #e8b57f;
-    //margin-left: 2vw;
-    //margin-right: 2vw;
+    height: 15vw;
+    color: #bc6c25;
+    border: #e8b57f 1px solid;
+    background: #e8b57f;
+    margin-left: 2vw;
+    margin-right: 2vw;
     margin-bottom: 1vw;
   }
 
   .segmented-text {
     color: #bc6c25;
-    font-size: 3vw;
   }
 
 }
