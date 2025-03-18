@@ -7,14 +7,14 @@
       <div class="snap-always snap-center shrink-0 first:pl-0 last:pr-0 w-[100%] mb-5"
            v-for="i in totalPage">
         <!--选择项区-->
-        <el-segmented v-model="value"
+        <el-segmented v-model="segmentIndex"
                       :options="buildings.slice((i-1)*pageSize,Math.min((i-1)*pageSize+5),buildings.length)">
           <template #default="scope">
             <div class="segmented-item-wrapper">
               <div class="segmented-icon">
-                {{ scope.item.label[0] }}{{value}}
+                {{ scope.item.building[0] }}
               </div>
-              <div class="segmented-text">{{ scope.item.label }}</div>
+              <div class="segmented-text">{{ scope.item.building }}</div>
             </div>
           </template>
         </el-segmented>
@@ -43,9 +43,13 @@
 
   </div>
 
-  <div class="course-list" :style="{ transform: `translateX(${-value * 100}%)` }">
-    <div v-for="i in buildings.length">
-      <div class="w-[100vw]">
+  <div class="course-list" :style="{ transform: `translateX(${-segmentIndex * 100}%)` }">
+    <div v-for="building in buildings">
+      <div :class="'w-[100vw] '+className">
+        <div v-for="teachInfo in building.infos">
+          <NewCourseCard :teach-info="teachInfo"></NewCourseCard>
+        </div>
+<!--        <NewCourseCard :teach-info="teachInfoRef"></NewCourseCard>-->
 <!--        {{i-1}}-->
 <!--        <BuildingIcon :buildingName="value"/>-->
 <!--        {{totalPage}}-->
@@ -63,41 +67,27 @@
 </template>
 <script lang="ts" setup>
 import {computed, onMounted, ref, watch} from 'vue'
-import BuildingIcon from "@/view/mobileed/BuildingIcon.vue";
+import NewCourseCard from "@/view/mobileed/NewCourseCard.vue";
+import {Items} from "@/types/Items";
+import {type BuildingInfo, useCourseStore} from "@/store/modules/courseInfosStore.ts";
+
+const props = defineProps<{
+  divisionIndex: number;
+  buildingName: string;
+}>();
+
+const courseStore = useCourseStore();
+
+// const courses = courseStore.getCoursesByDivisionAndBuilding(props.divisionIndex,props.buildingName);
+
+const buildings = ref<BuildingInfo[]>([]);
+
+const className = ref('no'+props.divisionIndex);
 
 const scrollContent = ref()
-const buildings = ref([])
 onMounted(() => {
-  buildings.value = [
-    {
-      value: 1,
-      label: "计11"
-    },
-    {
-      value: 2,
-      label: "计11"
-    },
-    {
-      value: 3,
-      label: "计11"
-    },
-    {
-      value: 4,
-      label: "计11"
-    },
-    {
-      value: 5,
-      label: "计11"
-    },
-    {
-      value: 6,
-      label: "计11"
-    },
-    {
-      value: 7,
-      label: "计11"
-    },
-  ]
+  buildings.value = courseStore.getBuildingsByDivision(props.divisionIndex);
+  console.log(buildings.value)
   let count = 0;
   buildings.value.forEach((t) => {t.value = count++;})
 })
@@ -125,12 +115,38 @@ const onClickProcess = (index: number) => {
   scrollContent.value.scrollLeft = scrollContent.value.scrollWidth * index / totalPage.value
 }
 
-const value = ref(0)
+const segmentIndex = ref(0)
 
 const contentHeight = ref('1')
-watch(value, (newValue, oldValue) => {
+
+onMounted(()=>{
+  nextTick(() => {
+    const element = document.getElementsByClassName(className.value).item(segmentIndex.value);
+    if (element) {
+      const clientHeight = element.clientHeight;
+      contentHeight.value = clientHeight + 'px';
+    }
+  });
+})
+
+const currentDivisionRef = toRef(courseStore, 'currentDivision');
+
+onMounted(()=>{
+  watch(currentDivisionRef,(value, oldValue)=>{
+    console.log(value)
+    console.log(props.divisionIndex)
+    if (value===props.divisionIndex){
+      const clientHeight = document.getElementsByClassName(className.value).item(newValue).clientHeight;
+      console.log(clientHeight);
+      contentHeight.value = clientHeight+ 'px';
+    }
+  });
+})
+
+
+watch(segmentIndex, (newValue, oldValue) => {
   console.log(newValue)
-  const clientHeight = document.getElementsByClassName('w-[100vw]').item(newValue).clientHeight;
+  const clientHeight = document.getElementsByClassName(className.value).item(newValue).clientHeight;
   console.log(clientHeight)
   contentHeight.value = clientHeight+ 'px'
 })

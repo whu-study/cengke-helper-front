@@ -8,7 +8,7 @@
           <img width="20vw" src="/src/assets/helper/1.svg" alt="">
           <span>文理学部</span>
         </template>
-        <KingArea>
+        <KingArea :division-index="0" building-name="2-教学楼">
 
         </KingArea>
       </el-collapse-item>
@@ -18,11 +18,9 @@
           <span>工学部</span>
         </template>
 
-        3333
-        <!--        <HelperContent-->
-        <!--            :cur-department-index="1"-->
-        <!--            v-model="curBuildings[1]"-->
-        <!--        />-->
+        <KingArea :division-index="1" building-name="5-教学楼">
+
+        </KingArea>
       </el-collapse-item>
       <el-collapse-item name="3">
         <template #title>
@@ -55,8 +53,18 @@
 
 import {ref} from "vue";
 import KingArea from "@/view/mobileed/NewKingArea.vue";
+import {useCourseStore} from "@/store/modules/courseInfosStore.ts";
 
+const useCourse = useCourseStore();
+useCourse.fetchCourseData()
 const activeName = ref('1')
+
+watch(activeName,(value, oldValue)=>{
+  useCourse.setCurrentDivision(value)
+})
+
+
+
 </script>
 
 <style scoped lang="scss">
