@@ -53,12 +53,9 @@ import {type BuildingInfo, useCourseStore} from "@/store/modules/courseInfosStor
 
 const props = defineProps<{
   divisionIndex: number;
-  buildingName: string;
 }>();
 
 const courseStore = useCourseStore();
-
-// const courses = courseStore.getCoursesByDivisionAndBuilding(props.divisionIndex,props.buildingName);
 
 const buildings = ref<BuildingInfo[]>([]);
 

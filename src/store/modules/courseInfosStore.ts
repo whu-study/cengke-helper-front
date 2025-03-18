@@ -33,11 +33,9 @@ export const useCourseStore = defineStore('course', {
             2: [],
             3: []
         } as DivisionInfo,
-        // 新增一个 Map 用于存储教学楼和课程信息的映射
-        buildingCourseMap: new Map<string, CourseInfo[]>(),
         isLoading: false,
         error: null as string | null,
-        _currentDivision: 0
+        _currentDivision: 0,
     }),
     getters: {
         // 获取当前学部信息的 getter 方法
@@ -1372,23 +1370,12 @@ export const useCourseStore = defineStore('course', {
                     }
                 });
 
-                // 构建教学楼和课程信息的映射
-                Object.values(this.courseData).forEach((division) => {
-                    division.forEach((building) => {
-                        this.buildingCourseMap.set(building.building, building.infos);
-                    });
-                });
-
                 console.log(this.courseData);
             } catch (error) {
                 this.error = '获取课程信息失败';
             } finally {
                 this.isLoading = false;
             }
-        },
-        getCoursesByDivisionAndBuilding(divisionIndex: number, buildingName: string): CourseInfo[] {
-            // 直接从 Map 中获取课程信息
-            return this.buildingCourseMap.get(buildingName) || [];
         },
         getBuildingsByDivision(divisionIndex: number): BuildingInfo[] {
             return this.courseData[divisionIndex] || [];

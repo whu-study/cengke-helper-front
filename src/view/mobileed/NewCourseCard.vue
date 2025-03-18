@@ -2,6 +2,7 @@
 
 import {onMounted, PropType, ref} from "vue";
 import {Items} from "@/types/Items";
+import {globalCurCourseInfo, isGlobalDrawOpen} from "@/store/custom/globalData.ts";
 
 const infoCardColor = ref(
     // '#606c38'
@@ -27,12 +28,16 @@ const bgColors = ref(['rgba(159,75,209,0.5)', 'rgba(60,110,113,0.5)'])
 const borderColors = ref(['#AA5ED7', '#8ad96f'])
 const fontColors = ref(['#451344', '#052a05'])
 
+const onClick = () => {
+  isGlobalDrawOpen.value = true;
+  globalCurCourseInfo.value = teachInfoRef.value;
+}
 
 </script>
 
 <template>
   <div class="mb-4 rounded-2xl ml-3 mr-3"
-       :style="{'background-color':infoCardColor}">
+       :style="{'background-color':infoCardColor}" @click="onClick">
     <div class="grid grid-cols-2 gap-44
     justify-between place-items-center whitespace-nowrap
  pt-[1vh]">

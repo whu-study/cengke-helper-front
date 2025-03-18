@@ -8,7 +8,7 @@
           <img width="20vw" src="/src/assets/helper/1.svg" alt="">
           <span>文理学部</span>
         </template>
-        <KingArea :division-index="0" building-name="2-教学楼">
+        <KingArea :division-index="0">
 
         </KingArea>
       </el-collapse-item>
@@ -18,7 +18,7 @@
           <span>工学部</span>
         </template>
 
-        <KingArea :division-index="1" building-name="5-教学楼">
+        <KingArea :division-index="1">
 
         </KingArea>
       </el-collapse-item>
@@ -28,11 +28,9 @@
           <span>信息学部</span>
         </template>
 
-        4444
-        <!--        <HelperContent-->
-        <!--            :cur-department-index="2"-->
-        <!--            v-model="curBuildings[2]"-->
-        <!--        />-->
+        <KingArea :division-index="2">
+
+        </KingArea>
 
 
       </el-collapse-item>
@@ -42,7 +40,9 @@
           <span>医学部</span>
         </template>
 
-        5555
+        <KingArea :division-index="3">
+
+        </KingArea>
 
       </el-collapse-item>
     </el-collapse>
@@ -57,6 +57,8 @@ import {useCourseStore} from "@/store/modules/courseInfosStore.ts";
 
 const useCourse = useCourseStore();
 useCourse.fetchCourseData()
+
+
 const activeName = ref('1')
 
 watch(activeName,(value, oldValue)=>{
