@@ -1394,8 +1394,8 @@ export const useCourseStore = defineStore('course', {
             return this.courseData[divisionIndex] || [];
         },
         // 设置当前学部信息的 setter 方法
-        setCurrentDivision(divisionIndex: string) {
-            this._currentDivision = Number(divisionIndex);
+        setCurrentDivision(divisionIndex: number) {
+            this._currentDivision = divisionIndex;
         }
     }
 });

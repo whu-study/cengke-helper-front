@@ -60,7 +60,7 @@ useCourse.fetchCourseData()
 const activeName = ref('1')
 
 watch(activeName,(value, oldValue)=>{
-  useCourse.setCurrentDivision(value)
+  useCourse.setCurrentDivision(Number(value)-1)
 })
 
 

@@ -18,14 +18,6 @@
             </div>
           </template>
         </el-segmented>
-<!--        <div class="grid grid-cols-5 gap-0 text-center">-->
-<!--          <div-->
-<!--              v-for="(item, index) in buildings.slice((i-1)*pageSize,Math.min((i-1)*pageSize+5),buildings.length)"-->
-<!--              :key="index"-->
-<!--          >-->
-<!--            {{ item.label }}-->
-<!--          </div>-->
-<!--        </div>-->
 
       </div>
     </div>
@@ -35,8 +27,8 @@
       <div v-for="i in totalPage">
         <div :class="{
        'w-20 h-2 rounded ml-1 mr-1':true,
-       'bg-blue-500':i-1===curScrollIndex,
-       'bg-blue-200':i-1!==curScrollIndex
+       'bg-yellow-500':i-1===curScrollIndex,
+       'bg-yellow-300':i-1!==curScrollIndex
      }" @click="onClickProcess(i-1)"></div>
       </div>
     </div>
@@ -49,26 +41,14 @@
         <div v-for="teachInfo in building.infos">
           <NewCourseCard :teach-info="teachInfo"></NewCourseCard>
         </div>
-<!--        <NewCourseCard :teach-info="teachInfoRef"></NewCourseCard>-->
-<!--        {{i-1}}-->
-<!--        <BuildingIcon :buildingName="value"/>-->
-<!--        {{totalPage}}-->
-
-<!--        <div v-if="i===3">-->
-<!--          1-->
-<!--          1-->
-<!--          1-->
-<!--          1-->
-<!--        </div>-->
       </div>
     </div>
   </div>
 
 </template>
 <script lang="ts" setup>
-import {computed, onMounted, ref, watch} from 'vue'
+import {computed, nextTick, onMounted, ref, watch} from 'vue'
 import NewCourseCard from "@/view/mobileed/NewCourseCard.vue";
-import {Items} from "@/types/Items";
 import {type BuildingInfo, useCourseStore} from "@/store/modules/courseInfosStore.ts";
 
 const props = defineProps<{
@@ -119,6 +99,8 @@ const segmentIndex = ref(0)
 
 const contentHeight = ref('1')
 
+const currentDivisionRef = toRef(courseStore, 'currentDivision');
+
 onMounted(()=>{
   nextTick(() => {
     const element = document.getElementsByClassName(className.value).item(segmentIndex.value);
@@ -127,27 +109,20 @@ onMounted(()=>{
       contentHeight.value = clientHeight + 'px';
     }
   });
-})
-
-const currentDivisionRef = toRef(courseStore, 'currentDivision');
-
-onMounted(()=>{
-  watch(currentDivisionRef,(value, oldValue)=>{
-    console.log(value)
-    console.log(props.divisionIndex)
-    if (value===props.divisionIndex){
-      const clientHeight = document.getElementsByClassName(className.value).item(newValue).clientHeight;
-      console.log(clientHeight);
-      contentHeight.value = clientHeight+ 'px';
-    }
+  watch(currentDivisionRef,()=>{
+    nextTick(() => {
+      const element = document.getElementsByClassName(className.value).item(segmentIndex.value);
+      if (element) {
+        const clientHeight = element.clientHeight;
+        contentHeight.value = clientHeight + 'px';
+      }
+    })
   });
 })
 
 
-watch(segmentIndex, (newValue, oldValue) => {
-  console.log(newValue)
+watch(segmentIndex, (newValue) => {
   const clientHeight = document.getElementsByClassName(className.value).item(newValue).clientHeight;
-  console.log(clientHeight)
   contentHeight.value = clientHeight+ 'px'
 })
 
