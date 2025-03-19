@@ -8,7 +8,8 @@
            v-for="i in totalPage">
         <!--选择项区-->
         <el-segmented v-model="segmentIndex"
-                      :options="buildings.slice((i-1)*pageSize,Math.min((i-1)*pageSize+5),buildings.length)">
+                      :options="buildings.slice((i-1)*pageSize,Math.min((i-1)*pageSize+5),buildings.length)"
+                      @change="onChange">
           <template #default="scope">
             <div class="segmented-item-wrapper">
               <div class="segmented-icon">
@@ -36,10 +37,10 @@
   </div>
 
   <div class="course-list" :style="{ transform: `translateX(${-segmentIndex * 100}%)` }">
-    <div v-for="building in buildings">
+    <div v-for="(building,idx) in buildings" :key="idx">
       <div :class="'w-[100vw] '+className">
         <div v-for="teachInfo in building.infos">
-          <NewCourseCard :teach-info="teachInfo"></NewCourseCard>
+          <NewCourseCard :teach-info="teachInfo"/>
         </div>
       </div>
     </div>
@@ -59,14 +60,22 @@ const courseStore = useCourseStore();
 
 const buildings = ref<BuildingInfo[]>([]);
 
-const className = ref('no'+props.divisionIndex);
+const className = ref('no' + props.divisionIndex);
+
+const onChange = (idx: number) => {
+  const clientHeight = document.getElementsByClassName(className.value).item(idx).clientHeight;
+  contentHeight.value = clientHeight + 'px'
+}
+
 
 const scrollContent = ref()
 onMounted(() => {
   buildings.value = courseStore.getBuildingsByDivision(props.divisionIndex);
   console.log(buildings.value)
   let count = 0;
-  buildings.value.forEach((t) => {t.value = count++;})
+  buildings.value.forEach((t) => {
+    t.value = count++;
+  })
 })
 
 const pageSize = 5;
@@ -98,7 +107,7 @@ const contentHeight = ref('1')
 
 const currentDivisionRef = toRef(courseStore, 'currentDivision');
 
-onMounted(()=>{
+onMounted(() => {
   nextTick(() => {
     const element = document.getElementsByClassName(className.value).item(segmentIndex.value);
     if (element) {
@@ -106,7 +115,7 @@ onMounted(()=>{
       contentHeight.value = clientHeight + 'px';
     }
   });
-  watch(currentDivisionRef,()=>{
+  watch(currentDivisionRef, () => {
     nextTick(() => {
       const element = document.getElementsByClassName(className.value).item(segmentIndex.value);
       if (element) {
@@ -117,11 +126,6 @@ onMounted(()=>{
   });
 })
 
-
-watch(segmentIndex, (newValue) => {
-  const clientHeight = document.getElementsByClassName(className.value).item(newValue).clientHeight;
-  contentHeight.value = clientHeight+ 'px'
-})
 
 </script>
 
@@ -168,8 +172,8 @@ watch(segmentIndex, (newValue) => {
 
 .course-list {
   display: flex;
-  flex-direction: row;
+  //flex-direction: row;
   transition: transform 0.5s ease; /* 添加过渡效果，并使用缓动函数 */
-  height: v-bind(contentHeight);
+  max-height: v-bind(contentHeight);
 }
 </style>
