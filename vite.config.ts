@@ -4,6 +4,7 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import {NaiveUiResolver} from 'unplugin-vue-components/resolvers'
 import {ElementPlusResolver} from 'unplugin-vue-components/resolvers'
+import {VantResolver} from "@vant/auto-import-resolver";
 import tailwindcss from '@tailwindcss/vite'
 
 import ElementPlus from "unplugin-element-plus/vite";
@@ -38,10 +39,11 @@ export default defineConfig({
                         'useLoadingBar'
                     ]
                 }
-            ]
+            ],
+            resolvers: [ElementPlusResolver(), NaiveUiResolver()],
         }),
         Components({
-            resolvers: [ElementPlusResolver(), NaiveUiResolver()],
+            resolvers: [ElementPlusResolver(), NaiveUiResolver(),VantResolver()],
         }),
         ElementPlus({}),
     ],
