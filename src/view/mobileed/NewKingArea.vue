@@ -13,7 +13,7 @@
           <template #default="scope">
             <div class="segmented-item-wrapper">
               <div class="segmented-icon">
-                {{ scope.item.building[0] }}
+                {{ scope.item.building[0] === '0' ? scope.item.building.slice(0, 2) : scope.item.building[0]}}
               </div>
               <div class="segmented-text">{{ scope.item.building }}</div>
             </div>
@@ -42,6 +42,8 @@
         <div v-for="teachInfo in building.infos">
           <NewCourseCard :teach-info="teachInfo"/>
         </div>
+
+        <div style="height: 3vw;"></div>
       </div>
     </div>
   </div>

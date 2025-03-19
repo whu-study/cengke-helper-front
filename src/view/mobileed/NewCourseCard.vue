@@ -1,14 +1,9 @@
 <script setup lang="ts">
+import { onMounted, PropType, ref } from "vue";
+import { Items } from "@/types/Items";
+import { globalCurCourseInfo, isGlobalDrawOpen } from "@/store/custom/globalData.ts";
 
-import {onMounted, PropType, ref} from "vue";
-import {Items} from "@/types/Items";
-import {globalCurCourseInfo, isGlobalDrawOpen} from "@/store/custom/globalData.ts";
-
-const infoCardColor = ref(
-    // '#606c38'
-    'rgba(96,108,56,0.5)'
-)
-const {teachInfo} =
+const { teachInfo } =
     defineProps({
       teachInfo: Object as PropType<Items.TeachInfo>,
     })
@@ -32,43 +27,102 @@ const onClick = () => {
   isGlobalDrawOpen.value = true;
   globalCurCourseInfo.value = teachInfoRef.value;
 }
-
 </script>
 
 <template>
-  <div class="mb-4 rounded-2xl ml-3 mr-3"
-       :style="{'background-color':infoCardColor}" @click="onClick">
-    <div class="grid grid-cols-2 gap-44
-    justify-between place-items-center whitespace-nowrap
- pt-[1vh]">
-      <div class="text-2xl">{{ teachInfoRef.room }}</div>
-      <div class="border-2 rounded-2xl pl-1.5 pr-1.5 pt-0.5 pb-0.5 text-1xl"
-           :style="{'background-color':bgColors[teachInfoRef.courseType==='通识课'?1:0],'border-color':borderColors[teachInfoRef.courseType==='通识课'?1:0],'color':fontColors[teachInfoRef.courseType==='通识课'?1:0]}">
-        {{ teachInfoRef.courseType }}
+  <el-card shadow="always" class="info-card">
+    <div  @click="onClick">
+      <div class="info-card-header">
+        <div class="room">{{ teachInfoRef.room }}</div>
+        <div></div>
+        <div class="course-type"
+             :style="{'background-color':bgColors[teachInfoRef.courseType==='通识课'?1:0],'border-color':borderColors[teachInfoRef.courseType==='通识课'?1:0],'color':fontColors[teachInfoRef.courseType==='通识课'?1:0]}">
+          {{ teachInfoRef.courseType }}
+        </div>
+      </div>
+      <div class="course-name">
+        {{ teachInfoRef.courseName }}
+      </div>
+      <div class="info-card-footer">
+        <div class="faculty">「{{ teachInfoRef.faculty }}」</div>
+        <div class="teacher">
+          <ul>
+            <li>
+              {{ teachInfoRef.teacherName }} {{ teachInfoRef.teacherTitle }}
+            </li>
+          </ul>
+        </div>
+        <div class="course-time">{{ teachInfoRef.courseTime }}</div>
       </div>
     </div>
-    <div class="grid grid-rows-1
-    justify-center place-content-center place-items-center ml-5 mr-5 text-center
-text-[150%]">
-      {{ teachInfoRef.courseName }}
-    </div>
-    <div class="grid grid-cols-3 gap-1
-    justify-between whitespace-nowrap
-    text-[83%] pb-[1.1vh] pt-[1vh]">
-      <div class="text-left pl-2">「{{ teachInfoRef.faculty }}」</div>
-      <div class="text-center">
-        <ul>
-          <li>
-            {{ teachInfoRef.teacherName }} {{ teachInfoRef.teacherTitle }}
-          </li>
-        </ul>
 
-      </div>
-      <div class="text-right pr-2">{{ teachInfoRef.courseTime }}</div>
-    </div>
-  </div>
+  </el-card>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+:deep(.el-card__body){
+  padding: 0;
+}
+.info-card {
+  margin-bottom: 3vw;
+  border-radius: 1vw;
+  margin-left: 3vw;
+  margin-right: 3vw;
+  background: #d3b883;
+  &-header {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    place-items: center;
+    white-space: nowrap;
+    padding-top: 1vh;
+    font-size: 3.5vw;
 
+    .room {
+      font-size: 5vw;
+      text-align: left;
+    }
+
+    .course-type {
+      //border-width: 2px;
+      border-radius: 1vw;
+      padding: 0.5vw 1.5vw;
+      text-align: right;
+    }
+  }
+
+  .course-name {
+    display: grid;
+    grid-template-rows: repeat(1, minmax(0, 1fr));
+    justify-content: center;
+    place-content: center;
+    place-items: center;
+    margin-left: 1.25rem;
+    margin-right: 1.25rem;
+    text-align: center;
+    font-size: 6vw;
+  }
+
+  &-footer {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    white-space: nowrap;
+    font-size: 2vw;
+    padding-bottom: 1.1vh;
+    padding-top: 1vh;
+
+    .faculty {
+      text-align: left;
+      padding-left: 1vw;
+    }
+
+    .teacher {
+      text-align: center;
+    }
+
+    .course-time {
+      text-align: right;
+      padding-right: 1vw;
+    }
+  }
+}
 </style>
