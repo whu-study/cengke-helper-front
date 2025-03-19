@@ -5,7 +5,7 @@
     <el-collapse v-model="activeName" accordion>
       <el-collapse-item name="1">
         <template #title>
-          <img width="20vw" src="/src/assets/helper/1.svg" alt="">
+          <img style="width: 5vw" src="/src/assets/helper/1.svg" alt="">
           <span>文理学部</span>
         </template>
         <KingArea :division-index="0">
@@ -14,7 +14,7 @@
       </el-collapse-item>
       <el-collapse-item name="2">
         <template #title>
-          <img width="20vw" src="/src/assets/helper/2.svg" alt="">
+          <img style="width: 5vw" src="/src/assets/helper/2.svg" alt="">
           <span>工学部</span>
         </template>
 
@@ -24,7 +24,7 @@
       </el-collapse-item>
       <el-collapse-item name="3">
         <template #title>
-          <img width="20vw" src="/src/assets/helper/3.svg" alt="">
+          <img style="width: 5vw" src="/src/assets/helper/3.svg" alt="">
           <span>信息学部</span>
         </template>
 
@@ -36,7 +36,7 @@
       </el-collapse-item>
       <el-collapse-item name="4">
         <template #title>
-          <img width="20vw" src="/src/assets/helper/4.svg" alt="">
+          <img style="width: 5vw" src="/src/assets/helper/4.svg" alt="">
           <span>医学部</span>
         </template>
 
@@ -84,7 +84,7 @@ watch(activeName,(value, oldValue)=>{
   background: #e8b57f;
   //border: #bc6c25 2px solid;
   margin-bottom: 1%;
-  //height: 5vw;
+  height: 10vw;
 }
 
 :deep(.el-collapse-item .el-collapse-item__content) {
