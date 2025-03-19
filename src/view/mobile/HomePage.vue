@@ -1,9 +1,3 @@
-<script setup lang="ts">
-
-import HelperCollapse from "@/view/mobileed/HelperCollapse.vue";
-import {globalCurCourseInfo, isGlobalDrawOpen} from "@/store/custom/globalData.ts";
-</script>
-
 <template>
   <el-drawer v-model="isGlobalDrawOpen" direction="btt" size="90%">
     <template #header>
@@ -20,10 +14,15 @@ import {globalCurCourseInfo, isGlobalDrawOpen} from "@/store/custom/globalData.t
       </div>
     </template>
   </el-drawer>
-
-  <HelperCollapse></HelperCollapse>
+  <HelperRoot/>
 </template>
+<script setup lang="ts">
 
-<style scoped>
+import {globalCurCourseInfo, isGlobalDrawOpen} from "@/store/custom/globalData.ts";
+import HelperRoot from "@/view/helper/HelperRoot.vue";
+</script>
+
+<style scoped lang="scss">
+
 
 </style>

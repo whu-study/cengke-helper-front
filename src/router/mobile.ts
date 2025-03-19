@@ -11,23 +11,23 @@ export const routes:Array<RouteRecordRaw> = [
             {
                 path: 'home',
                 name: 'home',
-                component: () => import('@/view/mobileed/HomePage.vue'),
+                component: () => import('@/view/mobile/HomePage.vue'),
             },
             {
                 path: 'friend',
                 name: 'friend',
-                component: () => import('@/view/mobileed/HomePage.vue'),
+                component: () => import('@/view/mobile/HomePage.vue'),
             }
         ]
     },
     {
         path: '/tree-hole',
-        component: () => import('@/view/mobileed/Test.vue'),
+        component: () => import('@/view/mobile/Test.vue'),
         meta: {hidden: true}
     },
     {
         path: '/test',
-        component: () => import('@/view/mobileed/Test.vue'),
+        component: () => import('@/view/mobile/Test.vue'),
         meta: {hidden: true}
     }
 ]

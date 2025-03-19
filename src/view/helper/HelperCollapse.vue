@@ -52,7 +52,7 @@
 <script setup lang="ts">
 
 import {ref} from "vue";
-import KingArea from "@/view/mobileed/NewKingArea.vue";
+import KingArea from "@/view/helper/KingArea.vue";
 import {useCourseStore} from "@/store/modules/courseInfosStore.ts";
 
 const useCourse = useCourseStore();

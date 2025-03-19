@@ -40,7 +40,7 @@
     <div v-for="(building,idx) in buildings" :key="idx">
       <div :class="'w-[100vw] '+className">
         <div v-for="teachInfo in building.infos">
-          <NewCourseCard :teach-info="teachInfo"/>
+          <CourseCard :teach-info="teachInfo"/>
         </div>
 
         <div style="height: 3vw;"></div>
@@ -51,7 +51,7 @@
 </template>
 <script lang="ts" setup>
 import {computed, nextTick, onMounted, ref, watch} from 'vue'
-import NewCourseCard from "@/view/mobileed/NewCourseCard.vue";
+import CourseCard from "@/view/helper/CourseCard.vue";
 import {type BuildingInfo, useCourseStore} from "@/store/modules/courseInfosStore.ts";
 
 const props = defineProps<{
