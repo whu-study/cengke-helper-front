@@ -10,7 +10,7 @@ export const webGetProfile =  ():Promise<TransDef> => {
 
     const res:UserProfile = {
         id: 1,
-        username: "admin",
+        username: "薛涛",
         email: "1921@qq.com",
         avatar: "URL_ADDRESSm",
         bio: "这是一个测试用户",
