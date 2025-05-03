@@ -6,6 +6,8 @@
     <template #default>
       <div>
         {{globalCurCourseInfo.courseName}}
+
+        <el-button @click="isGlobalDrawOpen=false">按钮</el-button>
       </div>
     </template>
     <template #footer>
@@ -14,6 +16,11 @@
       </div>
     </template>
   </el-drawer>
+
+  <div>
+    搜索
+    第几周，第几节，星期几
+  </div>
   <HelperRoot/>
 </template>
 <script setup lang="ts">

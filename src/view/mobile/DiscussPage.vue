@@ -1,9 +1,11 @@
 <script setup lang="ts">
-</script>
-<template>
-  <router-view/>
 
+</script>
+
+<template>
+discuss
 </template>
+
 <style scoped>
 
 </style>

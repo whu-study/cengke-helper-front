@@ -14,10 +14,20 @@ export const routes:Array<RouteRecordRaw> = [
                 component: () => import('@/view/mobile/HomePage.vue'),
             },
             {
-                path: 'friend',
-                name: 'friend',
-                component: () => import('@/view/mobile/HomePage.vue'),
-            }
+                path: 'discuss',
+                name: 'discuss',
+                component: () => import('@/view/mobile/DiscussPage.vue'),
+            },
+            {
+                path: 'publish',
+                name: 'publish',
+                component: () => import('@/view/mobile/PublishPage.vue'),
+            },
+            {
+                path: 'profile',
+                name: 'profile',
+                component: () => import('@/view/mobile/ProfilePage.vue'),
+            },
         ]
     },
     {
