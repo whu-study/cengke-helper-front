@@ -2,10 +2,11 @@
 import {webGetProfile} from "@/api/profile.ts";
 import type {UserProfile} from "@/types/user.ts";
 import {globalUserProfile} from "@/store/custom/profile.ts";
+import {onMounted} from 'vue'
+
 onMounted(() => {
   webGetProfile().then((res) => {
-    const userProfile = res.data as UserProfile
-    globalUserProfile.value = userProfile
+    globalUserProfile.value = res.data as UserProfile
 
   })
 })
@@ -13,7 +14,7 @@ onMounted(() => {
 
 <template>
   <div class="my-avatar">
-    <el-avatar>雪涛</el-avatar>
+
     {{globalUserProfile.username}}
   </div>
 </template>

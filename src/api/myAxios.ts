@@ -13,7 +13,10 @@ const myAxios = axios.create({baseURL});
 // 请求拦截器
 myAxios.interceptors.request.use(config => {
     // TODO 这里吧本地的token添加到请求头中
-    const token = localStorage.getItem(userTokenKey);
+    // const token = localStorage.getItem(userTokenKey);
+    const token = userTokenKey;
+    console.log('Current token:', token);  // 调试输出
+
     if (token) {
         config.headers.Authorization = `${token}`;
     }
@@ -85,6 +88,9 @@ myAxios.interceptors.response.use(
     }
 )
 
-export function myRequest<T, R>(config: AxiosRequestConfig<T>): Promise<R> {
-    return myAxios(config) as unknown as Promise<R>;
+// myAxios.ts
+export function myRequest<T = never, R = any>(
+    config: AxiosRequestConfig<T>
+): Promise<TransDef<R>> {
+    return myAxios(config);
 }
