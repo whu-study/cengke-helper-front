@@ -39,6 +39,11 @@ export const routes:Array<RouteRecordRaw> = [
         path: '/test',
         component: () => import('@/view/mobile/Test.vue'),
         meta: {hidden: true}
+    },
+    {
+        path:'/login',
+        component: () => import('@/view/login/Login.vue'),
+        meta: {hidden: true}
     }
 ]
 

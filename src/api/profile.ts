@@ -23,3 +23,4 @@ export const webGetProfile =  ():Promise<TransDef> => {
         data: res
     })
 }
+

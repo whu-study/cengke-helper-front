@@ -1,5 +1,6 @@
 import axios, {type AxiosRequestConfig} from "axios";
 import {userTokenKey, baseURL} from "./globalConst";
+import {ElMessage} from "element-plus";
 
 export interface TransDef {
     code: number
@@ -66,7 +67,7 @@ myAxios.interceptors.response.use(
 
                 }
                 console.log("请求有误")
-                showErrorMsg(msg)
+                ElMessage.error(msg)
                 break;
             }
             default: // 未知错误
