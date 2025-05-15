@@ -1,9 +1,9 @@
 import axios, {type AxiosRequestConfig} from "axios";
 import {userTokenKey, baseURL} from "./globalConst";
 
-export interface TransDef {
+export interface TransDef<T = any> {
     code: number
-    data: object
+    data: T
     msg: string
 }
 
@@ -89,8 +89,6 @@ myAxios.interceptors.response.use(
 )
 
 // myAxios.ts
-export function myRequest<T = never, R = any>(
-    config: AxiosRequestConfig<T>
-): Promise<TransDef<R>> {
+export function myRequest<T = never, R = any>(config: AxiosRequestConfig<T>): Promise<TransDef<R>> {
     return myAxios(config);
 }
