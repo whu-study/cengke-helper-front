@@ -1,10 +1,19 @@
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import {ref, reactive, onMounted} from 'vue'
 import { View, Hide } from '@element-plus/icons-vue'
+import {webSendLogin} from "@/api/login.ts";
+import {successCode} from "@/api/myAxios.ts";
+import {useRouter} from "vue-router";
+import {ElMessage} from "element-plus";
+import {useUserStore, useUserToken} from "@/store/modules/user.ts";
+import type {UserProfile} from "@/types/user.ts";
+import Cookies from 'js-cookie';
+import JSEncrypt from 'jsencrypt';  // 引入加密库
 
-
-
+const userStore=useUserStore()
+const userToken=useUserToken()
+const router=useRouter()
 // 表单数据
 const loginForm = reactive({
   email: '',
@@ -13,7 +22,54 @@ const loginForm = reactive({
 })
 
 
+// 密钥配置（实际应从后端获取或配置中心读取）
+const PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxyz...  // 实际公钥内容
+-----END PUBLIC KEY-----`;
 
+const PRIVATE_KEY = `-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7...  // 实际私钥内容
+-----END PRIVATE KEY-----`;
+
+
+// 加密函数（使用公钥加密）
+const encryptPassword = (password: string): string => {
+  // const encryptor = new JSEncrypt();
+  // encryptor.setPublicKey(PUBLIC_KEY);  // 设置公钥
+  // const encrypted = encryptor.encrypt(password);  // 加密方法
+  // return encrypted || '';  // 加密失败返回空字符串（避免存储false）
+  return password
+}
+
+// 解密函数（使用私钥解密）
+const decryptPassword = (encryptedStr: string | undefined): string => {
+  if (!encryptedStr) return '';  // 空值直接返回空
+  try {
+    const decryptor = new JSEncrypt();
+    decryptor.setPrivateKey(PRIVATE_KEY);  // 设置私钥
+    const decrypted = decryptor.decrypt(encryptedStr);  // 解密方法
+    return decrypted || '';  // 解密失败返回空字符串
+  } catch (error) {
+    console.error('解密失败:', error);
+    return '';
+  }
+}
+
+onMounted(()=>{
+  const cachedEmail = Cookies.get('email');
+  const cachedPassword = Cookies.get('password');
+  if (cachedEmail && cachedPassword) {
+    //开始解密并填充
+    console.log('开始解密并填充')
+    loginForm.email = cachedEmail;
+    // loginForm.password = decryptPassword(cachedPassword);  // 调用解密函数
+    loginForm.password=cachedPassword
+    loginForm.rememberMe = true;  // 自动勾选记住密码
+  }else {
+    console.log('填充失败')
+    console.log(cachedEmail,cachedPassword)
+  }
+})
 
 // 密码可见状态
 const passwordVisible = ref(false)
@@ -39,11 +95,51 @@ const loginRules = reactive({
     }
   ]
 })
-
+interface loginResponse{
+  userInfo?:UserProfile,
+  token:string
+}
 // 登录处理
-const handleLogin = () => {
+const handleLogin =async () => {
   // 这里添加实际的登录逻辑
-  console.log('登录数据:', loginForm)
+  console.log('请求登录')
+
+  try {
+    const result =await webSendLogin(loginForm.email,loginForm.password)
+    if(result.code===successCode){
+      //成功登录处理逻辑，储存用户信息和记录登录状态
+      console.log('登录成功',result.msg)
+      ElMessage.success('登录成功')
+      router.push('/')
+      const response=result.data as unknown as loginResponse
+      userStore.setUser(response.userInfo as unknown as UserProfile)
+      userToken.setToken(response.token)
+      userStore.setLogin(true)
+
+
+      //检查是否记住密码，进行记住密码处理
+      if(loginForm.rememberMe){
+        //记住密码则将密码存储在cookie，储存七天
+        console.log('开始存储密码')
+        const encryptedPwd = encryptPassword(loginForm.password);
+        console.log(encryptedPwd)
+        Cookies.set('email',loginForm.email,{expires:7})
+        Cookies.set('password',encryptedPwd,{expires:7})
+      }else {
+        // 未勾选则清除缓存
+        console.log('开始清楚缓存')
+        Cookies.remove('email');
+        Cookies.remove('password');
+      }
+    }else{
+      console.log('登录失败',result.msg)
+      ElMessage.error('登录失败'+result.msg)
+
+    }
+  }catch (err){
+    console.log("网络异常",err)
+  }
+
 }
 
 // 忘记密码处理

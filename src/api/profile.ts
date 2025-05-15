@@ -21,6 +21,6 @@ export const webGetProfile =  ():Promise<TransDef> => {
         code: 0,
         msg: "success",
         data: res
-    })
+    })as unknown as Promise<TransDef>
 }
 

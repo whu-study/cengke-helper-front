@@ -2,6 +2,16 @@
 import { ref, reactive ,computed} from 'vue'
 import { ElMessage } from 'element-plus'
 import Identify from '@/components/login/IdentifyCode.vue'
+import { webSendEmailVerifyCode, webUserRegister} from '@/api/register.ts'
+import type {TransDef} from "@/api/myAxios.ts";
+import  {successCode} from "@/api/myAxios.ts";
+import {useRouter} from "vue-router";
+import {useUserStore, useUserToken} from "@/store/modules/user.ts";
+import type {UserProfile} from "@/types/user.ts";
+
+const userStore=useUserStore()
+const userToken=useUserToken()
+const router=useRouter()
 
 type ValidateFields = 'email' | 'captcha' | 'emailCode' | 'password' | 'confirmPassword'
 const validate=ref<Record<ValidateFields, boolean>>({
@@ -12,6 +22,10 @@ const validate=ref<Record<ValidateFields, boolean>>({
   confirmPassword: false
 })
 
+const realData=reactive({
+  email:'',
+  password:''
+})
 const formRef = ref()
 //设置是否允许注册
 const ifCanRegister=ref(false)
@@ -72,27 +86,41 @@ const sendEmailCode = async () => {
     ElMessage.error('请先输入邮箱')
     return
   }
-
-  ifCanRegister.value=true
-  ElMessage.success('发送验证码成功')
-  isSending.value = true
-  let count = 3
-  const timer = setInterval(() => {
-    sendBtnText.value = `${count}秒后重发`
-    if (count-- <= 0) {
-      clearInterval(timer)
-      isSending.value = false
-      sendBtnText.value = '获取验证码'
-    }
-  }, 1000)
-
-  // 调用后端API发送验证码
+  //调用后端api发送验证码
   try {
+    const result=await webSendEmailVerifyCode(formData.email) as TransDef
 
-    ElMessage.success('验证码已发送')
-  } catch (err) {
-    ElMessage.error('发送失败，请重试')
+    if(result.code===successCode){
+      console.log("发送成功",result.msg)
+      ElMessage.success(result.msg)
+      //存储此次发送时的邮箱和密码信息
+      realData.email=formData.email
+      realData.password=formData.password
+      //可以注册了
+      ifCanRegister.value=true
+      //设置重发倒计时
+      isSending.value = true
+      let count = 3
+      const timer = setInterval(() => {
+        sendBtnText.value = `${count}秒后重发`
+        if (count-- <= 0) {
+          clearInterval(timer)
+          isSending.value = false
+          sendBtnText.value = '获取验证码'
+        }
+      }, 1000)
+
+    }else{
+      console.log("发送失败",result.msg)
+      ElMessage.error("邮箱已注册，请更换邮箱注册或重新登陆")
+    }
+  }catch (err){
+    console.log("网络异常",err)
+    ElMessage.error("网络异常"+err)
   }
+
+
+
 }
 
 // 密码复杂度校验
@@ -170,9 +198,32 @@ const formRules = reactive({
     }
   ]
 })
-const submitForm = () => {
+
+interface registerResponse{
+  userInfo?:UserProfile,
+  token:string
+}
+
+const submitForm = async () => {
   //提交注册表单
   console.log('提交注册表单')
+  try {
+    const result=await webUserRegister(realData.email,realData.password,formData.emailCode) as TransDef
+    if(result.code===successCode){
+      ElMessage.success(result.msg+"正在为您自动登录")
+      router.push('/')
+      const response= result?.data as unknown as registerResponse
+      const userInfo=response?.userInfo ??{}
+      userStore.setUser(userInfo)
+      const token=response?.token ??''
+      userToken.setToken(token)
+      userStore.setLogin(true)
+    }else{
+      ElMessage.error(result.msg)
+    }
+  }catch (error){
+    console.log('网络异常，注册失败')
+  }
 
 }
 //注册可触发的状态改变事件

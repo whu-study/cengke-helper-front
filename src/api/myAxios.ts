@@ -10,7 +10,7 @@ export interface TransDef {
 
 
 const myAxios = axios.create({baseURL});
-
+export const successCode=0
 // 请求拦截器
 myAxios.interceptors.request.use(config => {
     // TODO 这里吧本地的token添加到请求头中
