@@ -1,6 +1,7 @@
 import axios, {type AxiosRequestConfig} from "axios";
 import {userTokenKey, baseURL} from "./globalConst";
-
+import { useUserToken } from "@/store/modules/userStore";
+const userToken = useUserToken();
 export interface TransDef<T = any> {
     code: number
     data: T
@@ -14,7 +15,7 @@ const myAxios = axios.create({baseURL});
 myAxios.interceptors.request.use(config => {
     // TODO 这里吧本地的token添加到请求头中
     // const token = localStorage.getItem(userTokenKey);
-    const token = userTokenKey;
+    const token = userToken.token;
     console.log('Current token:', token);  // 调试输出
 
     if (token) {
@@ -69,7 +70,6 @@ myAxios.interceptors.response.use(
 
                 }
                 console.log("请求有误")
-                showErrorMsg(msg)
                 break;
             }
             default: // 未知错误
@@ -92,3 +92,4 @@ myAxios.interceptors.response.use(
 export function myRequest<T = never, R = any>(config: AxiosRequestConfig<T>): Promise<TransDef<R>> {
     return myAxios(config);
 }
+export const successCode = 0;

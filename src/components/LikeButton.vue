@@ -1,32 +1,30 @@
 <template>
   <el-button
-    :type="isLikedState ? 'danger' : 'default'"
-    :plain="!isLikedState"
-    :icon="isLikedState ? StarFilled : Star"
-    @click="handleToggleLike"
-    :loading="isLoading"
-    :size="size"
-    round
-    class="like-button"
-    aria-live="polite"
-    :aria-pressed="isLikedState"
-    :aria-label="isLikedState ? '取消点赞' : '点赞'"
+      :type="optimisticLikedState ? 'danger' : 'default'"
+      :plain="!optimisticLikedState"
+      :icon="optimisticLikedState ? StarFilled : Star"
+      @click="handleToggleLikeWithStore"
+      :loading="isLoading"
+      :size="size"
+      round
+      class="like-button"
+      aria-live="polite"
+      :aria-pressed="optimisticLikedState"
+      :aria-label="optimisticLikedState ? '取消点赞' : '点赞'"
   >
-    <span v-if="showText" class="like-text">{{ isLikedState ? '已赞' : '点赞' }}</span>
-    <span class="like-count">{{ currentLikes }}</span>
+    <span class="like-count">{{ optimisticLikesCount }}</span>
   </el-button>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, computed, watch, toRefs } from 'vue';
 import type { PropType } from 'vue';
 import { Star, StarFilled } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
-import { usePostsStore } from '@/store/modules/postsStore'; // 导入 postsStore
-import { useCommentsStore } from '@/store/modules/commentsStore'; // 导入 commentsStore
-import type { ToggleLikeResponseData } from '@/api/postService'; // 或 commentService
-// 假设 ToggleLikeResponseData 结构在 postService 和 commentService 中对于点赞是类似的
-
+import { useCommentsStore } from '@/store/modules/commentsStore'; // 调整路径
+import { useUserStore } from '@/store/modules/userStore'; // 调整路径
+import { usePostsStore } from '@/store/modules/postsStore'; // 调整路径
+import { onMounted } from 'vue';
 const props = defineProps({
   itemId: {
     type: [String, Number] as PropType<string | number>,
@@ -40,7 +38,7 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  itemType: {
+  itemType: { // 'post' | 'comment'
     type: String as PropType<'post' | 'comment'>,
     required: true,
     validator: (value: string) => ['post', 'comment'].includes(value),
@@ -49,154 +47,171 @@ const props = defineProps({
     type: String as PropType<'large' | 'default' | 'small'>,
     default: 'default',
   },
-  showText: {
-    type: Boolean,
-    default: false,
-  },
-   // 新增一个 prop，用于评论点赞时传递 postId，以便 store 更新
-  postIdForComment: {
+  // 新增 postId, 主要用于评论点赞时，让 store 知道是哪个帖子的评论
+  postId: {
     type: [String, Number] as PropType<string | number | undefined>,
     default: undefined,
   }
 });
-
+onMounted(() => {
+  console.log('LikeButton: Mounted. itemId =', props.itemId, 'postId =', props.postId, 'itemType =', props.itemType);
+});
 const emit = defineEmits<{
-  (e: 'like-toggled', payload: { itemId: string | number; itemType: 'post' | 'comment'; isLiked: boolean; newLikesCount: number }): void;
+  (e: 'like-toggled', payload: { itemId: string | number; itemType: 'post' | 'comment'; isLiked: boolean; newLikesCount: number; success: boolean }): void;
 }>();
 
-const postsStore = usePostsStore();
 const commentsStore = useCommentsStore();
+const userStore = useUserStore();
+const postsStore = usePostsStore();
 
-const isLikedState = ref(props.isInitiallyLiked);
-const currentLikes = ref(props.initialLikes);
 const isLoading = ref(false);
 
+// 用于乐观更新的本地状态
+const optimisticLikedState = ref(props.isInitiallyLiked);
+const optimisticLikesCount = ref(props.initialLikes);
+
+// 监听 props 的变化以更新本地乐观状态
 watch(() => props.isInitiallyLiked, (newValue) => {
-  isLikedState.value = newValue;
+  optimisticLikedState.value = newValue;
 });
 watch(() => props.initialLikes, (newValue) => {
-  currentLikes.value = newValue;
+  optimisticLikesCount.value = newValue;
 });
 
-const handleToggleLike =  () => {
+
+const handleToggleLikeWithStore = async () => {
   if (isLoading.value) return;
+  if (!userStore.userInfo.id) {
+      ElMessage.error('请先登录后再点赞');
+      return;
+  }
+  console.log("props.postId",props.postId)
+
+  // 对于评论点赞，postId 是必需的
+  if (props.itemType === 'comment' && !props.postId) {
+      ElMessage.error('操作失败：缺少 postId');
+      console.error("LikeButton: postId is required for liking a comment.");
+      return;
+  }
+
   isLoading.value = true;
 
-  const previousLikedState = isLikedState.value;
-  const previousLikesCount = currentLikes.value;
+  const originalLikedState = optimisticLikedState.value;
+  const originalLikesCount = optimisticLikesCount.value;
 
-  // 乐观更新 UI (可选，但能提供更好的即时反馈)
-  // isLikedState.value = !isLikedState.value;
-  // if (isLikedState.value) {
-  //   currentLikes.value++;
-  // } else {
-  //   currentLikes.value--;
-  // }
+  // 乐观更新 UI
+  optimisticLikedState.value = !optimisticLikedState.value;
+  optimisticLikesCount.value += optimisticLikedState.value ? 1 : -1;
 
   try {
-    if (props.itemType === 'post') {
-        postsStore.toggleLikePost(props.itemId).then((responseData) => {
-            if (responseData) {
-                isLikedState.value = responseData.isLiked;
-                currentLikes.value = responseData.likesCount;
-                emit('like-toggled', {
-                    itemId: props.itemId,
-                    itemType: props.itemType,
-                    isLiked: isLikedState.value,
-                    newLikesCount: currentLikes.value,
-                });
-            }
-        });
-    } else if (props.itemType === 'comment') {
-        if (props.postIdForComment === undefined) {
-            console.error('postIdForComment is required when itemType is "comment"');
-            ElMessage.error('操作失败：缺少帖子ID信息');
-            throw new Error('Missing postIdForComment for comment like toggle');
-        }
-        commentsStore.toggleLikeComment(props.itemId, props.postIdForComment).then((responseData) => {
-            if (responseData) {
-                isLikedState.value = responseData.isLiked;
-                currentLikes.value = responseData.likesCount;
-                emit('like-toggled', {
-                    itemId: props.itemId,
-                    itemType: props.itemType,
-                    isLiked: isLikedState.value,
-                    newLikesCount: currentLikes.value,
-                });
-            }
-        });
+    let success = false;
+    if (props.itemType === 'comment') {
+      const result = await commentsStore.toggleLikeComment(props.itemId, props.postId!); // 使用 props.postId
+      if (result) { // store action 成功
+        // store 会更新全局状态，props 会相应变化，然后 watch 会更新 optimisticLikedState 和 optimisticLikesCount
+        // 但为了即时反馈API的真实结果，可以手动同步一下（尽管通常watch就够了）
+        optimisticLikedState.value = result.isLiked;
+        optimisticLikesCount.value = result.likesCount;
+        success = true;
+      } else { 
+        // result 为 null 表示 store 内部可能因为某些原因（如未登录，已在 store 处理）没有执行 API
+        // 或者 API 调用失败（已在 store 中 ElMessage 提示）
+        // 回滚乐观更新
+        optimisticLikedState.value = originalLikedState;
+        optimisticLikesCount.value = originalLikesCount;
+      }
+    } else if (props.itemType === 'post') {
+      let success = false;
+      if(props.itemType === 'post') {
+        const result = await postsStore.toggleLikePost(props.itemId);
+
+      if (result) { // store action 成功
+        // store 会更新全局状态，props 会相应变化，然后 watch 会更新 optimisticLikedState 和 optimisticLikesCount
+        // 但为了即时反馈API的真实结果，可以手动同步一下（尽管通常watch就够了）
+        optimisticLikedState.value = result.isLiked;
+        optimisticLikesCount.value = result.likesCount;
+        success = true;
+      } else { 
+        // result 为 null 表示 store 内部可能因为某些原因（如未登录，已在 store 处理）没有执行 API
+        // 或者 API 调用失败（已在 store 中 ElMessage 提示）
+        // 回滚乐观更新
+        optimisticLikedState.value = originalLikedState;
+        optimisticLikesCount.value = originalLikesCount;
+      }
+      }
+      // TODO: 实现帖子点赞逻辑，可能需要另一个 store 或方法
+
     }
-} catch (error) {
-    console.error('Error toggling like:', error);
-    ElMessage.error('操作失败');
-}finally {
+    
+    emit('like-toggled', {
+        itemId: props.itemId,
+        itemType: props.itemType,
+        isLiked: optimisticLikedState.value, // 使用乐观更新后的状态
+        newLikesCount: optimisticLikesCount.value,
+        success: success,
+    });
+    if (success && (optimisticLikedState.value !== originalLikedState)) { // 只有状态真正改变且成功才提示
+        // ElMessage.success(optimisticLikedState.value ? '点赞成功' : '已取消点赞'); // store中可能已有提示
+    }
+
+
+  } catch (error) { // store action reject 时
+    console.error(`LikeButton: Failed to toggle like for ${props.itemType} ID ${props.itemId}:`, error);
+    // 回滚乐观更新
+    optimisticLikedState.value = originalLikedState;
+    optimisticLikesCount.value = originalLikesCount;
+    // ElMessage.error('操作失败，请稍后再试'); // store 中应该已经提示过了
+     emit('like-toggled', {
+        itemId: props.itemId,
+        itemType: props.itemType,
+        isLiked: originalLikedState, // 回滚后的状态
+        newLikesCount: originalLikesCount,
+        success: false,
+    });
+  } finally {
     isLoading.value = false;
   }
 };
 </script>
+
 <style scoped>
+/* */ /* ... 样式保持不变 ... */
 .like-button {
-  /* 基本样式，可以根据需要调整 */
-  /* 添加过渡效果，使按钮状态变化更平滑 */
   transition: all 0.2s ease-in-out;
-  /* 给按钮一个最小宽度，避免数字变化时按钮大小跳动 */
   min-width: 15vw;
-  /* 将按钮内容设置为内联弹性布局 */
   display: inline-flex;
-  /* 垂直居中对齐按钮内容 */
   align-items: center;
-  /* 水平居中对齐按钮内容 */
   justify-content: center;
-  /* 调整内边距以适应移动端 */
   padding: 1.5vw 2.5vw;
-  /* 调整字体大小 */
   font-size: 3.5vw;
 }
 
 .like-button .el-icon {
-  /* 图标大小 */
   font-size: 4vw;
-  /* 图标和数字之间的间距 */
   margin-right: 0.8vw;
 }
 
 .like-count {
-  /* 设置字体加粗 */
   font-weight: 500;
-  /* 给数字一个最小宽度，避免跳动 */
   min-width: 3vw;
-  /* 文本左对齐 */
   text-align: left;
 }
 
 .like-text {
-  /* 文本与图标之间的间距 */
   margin-left: 0.8vw;
 }
 
-/* 点赞状态下的特定样式 */
 .like-button.el-button--danger {
-  /* background-color: #f56c6c; */ /* Element Plus danger color */
-  /* border-color: #f56c6c; */
-  /* color: #fff; */
 }
 .like-button.el-button--danger.is-plain {
-  /* color: #f56c6c; */
-  /* background: #fef0f0; */
-  /* border-color: #fbc4c4; */
 }
 
-/* 针对不同尺寸的微调 */
 .like-button.el-button--small {
-  /* 小尺寸按钮的最小宽度 */
   min-width: 12vw;
-  /* 小尺寸按钮的内边距 */
   padding: 1vw 2vw;
-  /* 小尺寸按钮的字体大小 */
   font-size: 3vw;
 }
 .like-button.el-button--small .el-icon {
-  /* 小尺寸按钮的图标大小 */
   font-size: 3.5vw;
 }
 .like-button.el-button--small .like-count {

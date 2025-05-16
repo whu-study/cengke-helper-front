@@ -15,9 +15,11 @@
         :show-controls="true"
         :show-pagination="true"
         :total="postsStore.pagination.totalPosts"
-        :current-page="currentApiParams.page||1"   :page-size="currentApiParams.limit||9"     :current-sort-by="currentApiParams.sortBy"
-        :current-filter-text="currentApiParams.filterText"
-        @page-change="handlePageParamsChange"
+        :current-page="currentApiParams.page||1"
+        :page-size="currentApiParams.limit||9"
+        :current-sort-by="currentApiParams.sortBy"
+        :current-filter-text="currentApiParams.filterText" 
+        @page-change="(page: number, limit: number) => handlePageParamsChange({page, limit})"
         @filter-change="handleFilterSortChange"
       />
       </el-main>
@@ -71,9 +73,9 @@ const fetchData = () => {
  * @param page 新的页码
  * @param limit 新的每页数量
  */
-const handlePageParamsChange = (page: number, limit: number) => {
-  currentApiParams.value.page = page;
-  currentApiParams.value.limit = limit;
+const handlePageParamsChange = (payload: { page: number; limit: number }) => {
+  currentApiParams.value.page = payload.page;
+  currentApiParams.value.limit = payload.limit;
   fetchData(); // 使用更新后的参数重新获取数据
 };
 

@@ -27,7 +27,7 @@ export const routes: Array<RouteRecordRaw> = [
                 component: () => import('@/view/mobile/PublishPage.vue'), // 假设 PublishPage.vue 是创建新帖的视图
                 meta: {
                     // title: '发布新帖', // 可选的路由元信息
-                    // requiresAuth: true, // 通常发布帖子需要用户登录
+                    requiresAuth: true, // 通常发布帖子需要用户登录
                 }
             },
             {
@@ -59,9 +59,35 @@ export const routes: Array<RouteRecordRaw> = [
                 props: true, // 将路由参数 (如 :id) 作为 props 传递给 EditPostView 组件
                 meta: {
                     // title: '编辑帖子',
-                    // requiresAuth: true, // 编辑帖子通常需要用户登录且是帖子作者
+                    requiresAuth: true, // 编辑帖子通常需要用户登录且是帖子作者
                 }
             },
+                // 新增：“我的帖子”列表页路由
+    {
+        path: 'user/:userId/posts', // 路径可以自定义，例如 '/my-posts'，但使用 userID 更RESTful
+        name: 'MyPosts',
+        // component: () => import('@/view/mobile/UserPostListPage.vue'), // 建议创建一个包装组件或直接使用 PostList
+        // 如果直接使用 PostList，并假设 PostList.vue 能够处理 authorId
+        component: () => import('@/view/mobile/MyPostPage.vue'), // 或者你的 PostList.vue 路径
+        props: route => ({
+          showControls: false, // 在“我的帖子”页面可能不需要顶部的全局排序和筛选
+          authorId: route.params.userId, // 将路由参数 userId 映射为 authorId prop
+          // 你可能还需要传递其他 PostList 需要的 props，例如 pageSize 的默认值等
+          // 或者让 UserPostListPage.vue 内部管理 PostList 的 props
+        //   pageTitle: '我的帖子' // 可以传递一个标题给 PostList 或其包装组件
+        }),
+        meta: {
+          requiresAuth: true, // 查看“我的帖子”通常需要登录
+          // title: '我的帖子'
+        }
+      },
+    //   // (可选) 新增：编辑个人资料页路由
+    //   {
+    //       path: 'profile/edit',
+    //       name: 'EditProfile',
+    //       component: () => import('@/view/mobile/EditProfilePage.vue'), // 你需要创建这个组件
+    //       meta: { requiresAuth: true }
+    //   },
 
         ]
     },
@@ -74,17 +100,14 @@ export const routes: Array<RouteRecordRaw> = [
     {
         path: '/test',
         component: () => import('@/view/mobile/Test.vue'),
-        meta: { hidden: true }
+        meta: {hidden: true}
     },
-    // (可选) 添加一个全局的 404 Not Found 路由，应该放在所有路由定义的最后
-    // {
-    //   path: '/:pathMatch(.*)*',
-    //   name: 'NotFound',
-    //   component: () => import('@/views/NotFoundView.vue'), // 假设你有一个 NotFoundView
-    //   meta: {
-    //     hidden: true // 通常不在导航菜单中显示
-    //   }
-    // }
-];
+    {
+        path:'/login',
+        component: () => import('@/components/login/LoginPage.vue'),
+        meta: {hidden: true}
+    }
+
+]
 
 export default routes;

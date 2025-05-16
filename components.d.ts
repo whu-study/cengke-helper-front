@@ -8,6 +8,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    CollectButton: typeof import('./src/components/CollectButton.vue')['default']
     CommentItem: typeof import('./src/components/CommentItem.vue')['default']
     CommentList: typeof import('./src/components/CommentList.vue')['default']
     CreatePostForm: typeof import('./src/components/CreatePostForm.vue')['default']
@@ -17,6 +18,7 @@ declare module 'vue' {
     ElBreadcrumbItem: typeof import('element-plus/es')['ElBreadcrumbItem']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCard: typeof import('element-plus/es')['ElCard']
+    ElCheckbox: typeof import('element-plus/es')['ElCheckbox']
     ElCol: typeof import('element-plus/es')['ElCol']
     ElCollapse: typeof import('element-plus/es')['ElCollapse']
     ElCollapseItem: typeof import('element-plus/es')['ElCollapseItem']
@@ -28,6 +30,7 @@ declare module 'vue' {
     ElFormItem: typeof import('element-plus/es')['ElFormItem']
     ElIcon: typeof import('element-plus/es')['ElIcon']
     ElInput: typeof import('element-plus/es')['ElInput']
+    ElLink: typeof import('element-plus/es')['ElLink']
     ElMain: typeof import('element-plus/es')['ElMain']
     ElOption: typeof import('element-plus/es')['ElOption']
     ElPagination: typeof import('element-plus/es')['ElPagination']
@@ -37,9 +40,13 @@ declare module 'vue' {
     ElSkeleton: typeof import('element-plus/es')['ElSkeleton']
     ElTag: typeof import('element-plus/es')['ElTag']
     ElText: typeof import('element-plus/es')['ElText']
+    IdentifyCode: typeof import('./src/components/login/IdentifyCode.vue')['default']
     LikeButton: typeof import('./src/components/LikeButton.vue')['default']
+    LoginPage: typeof import('./src/components/login/LoginPage.vue')['default']
+    PostForm: typeof import('./src/components/PostForm.vue')['default']
     PostItem: typeof import('./src/components/PostItem.vue')['default']
     PostList: typeof import('./src/components/PostList.vue')['default']
+    RegisterPage: typeof import('./src/components/login/RegisterPage.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Test: typeof import('./src/components/Test.vue')['default']

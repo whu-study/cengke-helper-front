@@ -15,165 +15,157 @@
       </div>
 
       <el-alert
-          v-else-if="error"
-          :title="error"
-          type="error"
-          show-icon
-          :closable="false"
-          class="error-alert"
+        v-else-if="error"
+        :title="error"
+        type="error"
+        show-icon
+        :closable="false"
+        class="error-alert"
       >
-        <el-button type="primary" plain @click="goBack" round size="small">返回上一页</el-button>
+        <template #default>
+          <el-button type="primary" plain @click="goBackOrHome" round size="small">返回</el-button>
+        </template>
       </el-alert>
 
-      <CreatePostForm
-          v-else-if="postToEdit"
-          :is-edit-mode="true"
-          :editing-post="postToEdit"
-          @post-updated="handlePostUpdated"
-          @edit-cancelled="handleEditCancelled"
-          ref="editFormRef"
+      <PostForm
+        v-else-if="postToEdit"
+        :is-edit-mode="true"
+        :editing-post="postToEdit"
+        :is-submitting="isSubmitting"
+        @submit-form="handleUpdatePost"
+        @cancel-edit="handleEditCancelled"
+        ref="postFormComponentRef"
       />
-      <el-empty v-else description="无法加载帖子数据进行编辑" />
+      <el-empty v-else description="没有找到要编辑的帖子数据。" />
     </el-main>
   </el-container>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import CreatePostForm from '@/components/CreatePostForm.vue'; // 引入表单组件
-import type { Post } from '@/types/discuss'; // 引入 Post 类型
-import { ElMessage, ElNotification, ElSkeleton, ElAlert, ElEmpty } from 'element-plus';
+import PostForm from '@/components/CreatePostForm.vue'; // 引入新的表单组件
+import type { Post } from '@/types/discuss';
+import { ElMessage, ElNotification, ElSkeleton, ElAlert, ElEmpty, ElPageHeader, ElContainer, ElHeader, ElMain } from 'element-plus';
+import { apiGetPostById, apiUpdatePost, type UpdatePostBody } from '@/api/postService'; // 导入获取和更新API
+import { useUserStore } from '@/store/modules/userStore'; // 或你的 user store
+import { usePostsStore } from '@/store/modules/postsStore'; // 如果需要更新 store
+import { successCode } from '@/api/myAxios';
 
-// --- 响应式状态 ---
-const postToEdit = ref<Post | null>(null); // 要编辑的帖子数据
-const isLoading = ref(true); // 加载状态
-const error = ref<string | null>(null); // 错误信息
-const editFormRef = ref<InstanceType<typeof CreatePostForm> | null>(null); // 表单组件的引用
+const postToEdit = ref<Post | null>(null);
+const isLoading = ref(true);
+const error = ref<string | null>(null);
+const isSubmitting = ref(false);
+const postFormComponentRef = ref<InstanceType<typeof PostForm> | null>(null);
 
-// --- 路由与导航 ---
-const route = useRoute(); // 获取当前路由信息
-const router = useRouter(); // 获取路由实例
+const route = useRoute();
+const router = useRouter();
+const userStore = useUserStore(); // 用于权限检查
+const postsStore = usePostsStore(); // 可选
 
-// --- 模拟当前登录用户信息 (在实际应用中，这应该从 Pinia Store 或认证服务获取) ---
-const currentUser = ref<{ id: string | number }>({ id: 'user1' }); // 假设当前用户ID
-
-// --- 方法 ---
-
-/**
- * 根据路由参数中的帖子 ID 获取帖子详情以供编辑
- * @param postId 帖子ID
- */
 const fetchPostForEditing = async (postId: string | number) => {
   isLoading.value = true;
   error.value = null;
   postToEdit.value = null;
 
-  console.log(`正在获取 ID 为 ${postId} 的帖子数据以供编辑...`);
-
-  // --- 模拟 API 请求延迟 ---
-  await new Promise(resolve => setTimeout(resolve, 800));
-
-  // --- 在实际应用中，这里应该调用你的 postService 来获取帖子数据 ---
-  // 例如:
-  // try {
-  //   const fetchedPost = await postService.getPostById(postId);
-  //   // 检查当前用户是否有权编辑此帖
-  //   if (fetchedPost.author.id !== currentUser.value?.id) {
-  //     error.value = "您没有权限编辑此帖子。";
-  //     ElMessage.error("权限不足！");
-  //     router.replace({ name: 'PostDetail', params: { id: postId } }); // 或跳转到其他页面
-  //     return;
-  //   }
-  //   postToEdit.value = fetchedPost;
-  // } catch (err) {
-  //   console.error("获取帖子数据失败:", err);
-  //   error.value = "无法加载帖子数据，请稍后再试。";
-  // } finally {
-  //   isLoading.value = false;
-  // }
-
-  // --- 以下为模拟数据 ---
-  const sampleUser1 = { id: 'user1', username: '探索者约翰', avatar: '...' };
-  const mockPostsDatabase: Post[] = [
-    { id: '1', title: '初探 Vue 3 Composition API', content: '这是 Vue 3 Composition API 的一些内容...', author: sampleUser1, createdAt: new Date(), tags: ['Vue3', 'Frontend'], likesCount: 10, commentsCount: 2 },
-    { id: '2', title: 'Element Plus 主题定制技巧', content: 'Element Plus 主题定制非常灵活...', author: {id: 'user2', username: '设计师小王', avatar: '...'}, createdAt: new Date(), tags: ['UI', 'ElementPlus'], likesCount: 5, commentsCount: 1 },
-  ];
-
-  const foundPost = mockPostsDatabase.find(p => p.id.toString() === postId.toString());
-
-  if (foundPost) {
-    // 模拟权限检查
-    if (foundPost.author.id !== currentUser.value?.id) {
-      error.value = "您没有权限编辑此帖子。";
-      ElMessage.error("权限不足！您不是该帖子的作者。");
-      isLoading.value = false;
-      // 可以选择导航离开
-      // setTimeout(() => router.replace({ name: 'PostDetail', params: { id: postId } }), 2000);
-      return;
-    }
-    postToEdit.value = foundPost;
-  } else {
-    error.value = "未找到要编辑的帖子。它可能已被删除或链接无效。";
-  }
-  isLoading.value = false;
-};
-
-/**
- * 处理帖子成功更新事件
- * @param updatedPost - 更新后的帖子数据
- */
-const handlePostUpdated = (updatedPost: { id: string | number; title: string }) => {
-  // ElNotification 已在表单组件内部处理
-  // ElMessage.success(`帖子 "${updatedPost.title}" 更新成功！`);
-  // 更新成功后，通常导航回帖子详情页
-  router.push({ name: 'PostDetail', params: { id: updatedPost.id } });
-};
-
-/**
- * 处理取消编辑事件
- */
-const handleEditCancelled = () => {
-  // 用户取消编辑，导航回帖子详情页或上一页
-  if (postToEdit.value) {
-    router.push({ name: 'PostDetail', params: { id: postToEdit.value.id } });
-  } else {
-    goBack(); // 如果没有帖子数据，则尝试返回上一页
-  }
-};
-
-/**
- * 返回上一页或指定页面
- */
-const goBack = () => {
-  if (window.history.length > 1) {
-    router.back();
-  } else {
-    // 如果没有历史记录 (例如直接打开编辑页)，则导航到帖子详情页 (如果可能) 或论坛首页
-    const postId = route.params.id;
-    if (postId) {
-      router.replace({ name: 'PostDetail', params: { id: postId }});
+  try {
+    const response = await apiGetPostById(postId);
+    if (response.code === successCode && response.data) {
+      // 权限检查：确保当前用户是帖子的作者
+      if (response.data.author?.id?.toString() !== userStore.userInfo?.id?.toString()) {
+        error.value = "您没有权限编辑此帖子。";
+        ElMessage.error("权限验证失败：您不是该帖子的作者。");
+        // 可以选择导航离开，例如回到帖子详情或首页
+        // router.replace({ name: 'PostDetail', params: { id: postId } });
+        return; // 阻止进一步加载表单
+      }
+      postToEdit.value = response.data;
     } else {
-      router.replace({ name: 'DiscussHome' });
+      error.value = response.msg || "无法加载帖子数据进行编辑。帖子可能不存在。";
+      ElMessage.error(error.value);
     }
+  } catch (err: any) {
+    console.error("获取帖子数据失败:", err);
+    error.value = "获取帖子数据时发生网络错误，请稍后再试。";
+    ElMessage.error(error.value);
+  } finally {
+    isLoading.value = false;
   }
 };
 
-// --- 生命周期钩子 ---
+const handleUpdatePost = (payload: UpdatePostBody) => {
+  if (!postToEdit.value || !postToEdit.value.id) {
+    ElMessage.error("无法确定要更新的帖子。");
+    return;
+  }
+  isSubmitting.value = true;
+  apiUpdatePost(postToEdit.value.id, payload)
+    .then(response => {
+      if (response.code === successCode && response.data) {
+        ElNotification({
+          title: '更新成功！',
+          message: `帖子 "${response.data.title}" 已成功更新。`,
+          type: 'success',
+          duration: 3000,
+        });
+        // 可选: 更新 postsStore 中的帖子
+        // postsStore.updatePostInList(response.data); // 假设 store 有此方法
+        router.push({ name: 'PostDetail', params: { id: response.data.id.toString() } });
+      } else {
+        ElMessage.error(response.msg || '帖子更新失败，请稍后再试。');
+      }
+    })
+    .catch(err => {
+      console.error("更新帖子失败:", err);
+      ElMessage.error('帖子更新请求失败，请检查网络或联系管理员。');
+    })
+    .finally(() => {
+      isSubmitting.value = false;
+    });
+};
+
+const handleEditCancelled = () => {
+  ElMessage.info('编辑已取消');
+  if (postToEdit.value) {
+    router.push({ name: 'PostDetail', params: { id: postToEdit.value.id.toString() } });
+  } else {
+    goBack();
+  }
+};
+
+const goBack = () => {
+  if (window.history.length > 1 && router.options.history.state.back) {
+    router.back();
+  } else if (postToEdit.value?.id) {
+    router.replace({ name: 'PostDetail', params: { id: postToEdit.value.id.toString() }});
+  } else {
+    router.replace({ name: 'DiscussHome' }); // 默认返回社区首页
+  }
+};
+const goBackOrHome = () => {
+  // 错误状态下的返回逻辑
+  if (route.params.id) {
+    router.replace({ name: 'PostDetail', params: { id: route.params.id as string }});
+  } else {
+    router.replace({ name: 'DiscussHome' });
+  }
+};
+
 onMounted(() => {
   const postIdFromRoute = route.params.id;
-  if (postIdFromRoute) {
-    fetchPostForEditing(postIdFromRoute as string);
+  if (postIdFromRoute && typeof postIdFromRoute === 'string') {
+    fetchPostForEditing(postIdFromRoute);
   } else {
     error.value = "无效的帖子ID，无法进行编辑。";
     isLoading.value = false;
-    ElMessage.error("缺少帖子ID！");
-    // router.replace({ name: 'DiscussHome' }); // 或跳转到404
+    ElMessage.error("编辑错误：缺少有效的帖子ID！");
+    // router.replace({ name: 'DiscussHome' }); // 或者跳转到404页面
   }
 });
 </script>
 
 <style scoped>
+/* 样式与 PublishPage.vue 类似，可以复用或微调 */
 .edit-post-view-container {
   min-height: 100vh;
   background-color: #f0f2f5;
@@ -181,9 +173,9 @@ onMounted(() => {
 
 .page-header-container {
   background-color: #fff;
-  padding: 2vw 4vw;
-  border-bottom: 1px solid #e8e8e8;
-  box-shadow: 0 0.3vw 0.8vw rgba(0, 0, 0, 0.04);
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--el-border-color-light);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   height: auto;
   display: flex;
   align-items: center;
@@ -192,57 +184,32 @@ onMounted(() => {
   width: 100%;
 }
 .page-header-custom :deep(.el-page-header__content) {
-  font-size: 4.5vw;
-  color: #303133;
+  font-size: clamp(18px, 2vw, 20px);
+  color: var(--el-text-color-primary);
   font-weight: 600;
 }
 .page-header-custom :deep(.el-page-header__icon),
 .page-header-custom :deep(.el-page-header__left .el-divider--vertical) {
-  font-size: 5vw;
-  margin-right: 2vw;
+  font-size: clamp(20px, 2.2vw, 22px);
+  margin-right: 12px;
 }
 
 .main-content {
-  padding: 4vw;
+  padding: clamp(16px, 3vw, 24px);
 }
 
-.loading-state {
-  padding: 5vw;
+.loading-state, .error-alert, .el-empty {
+  padding: 20px;
   background-color: #fff;
-  border-radius: 2vw;
-}
-
-.error-alert {
-  margin: 2vw auto;
-  max-width: 90%;
-  font-size: 3.8vw;
-  padding: 3vw;
+  border-radius: 8px;
+  text-align: center;
+  margin: 0 auto;
+  max-width: 800px; /* 与 PostForm 宽度协调 */
 }
 .error-alert .el-button {
-  margin-top: 2vw;
-  font-size: 3.5vw;
-  padding: 1.5vw 3vw;
+  margin-top: 10px;
 }
-
-
-@media (min-width: 768px) {
-  .page-header-container {
-    padding: 1.5vw 3vw;
-  }
-  .page-header-custom :deep(.el-page-header__content) {
-    font-size: 1.8vw;
-  }
-  .page-header-custom :deep(.el-page-header__icon) {
-    font-size: 2vw;
-  }
-  .main-content {
-    padding: 3vw;
-  }
-  .error-alert {
-    font-size: 1.3vw;
-  }
-  .error-alert .el-button {
-    font-size: 1.2vw;
-  }
+:deep(.post-form-wrapper) {
+  margin-top: 0;
 }
 </style>

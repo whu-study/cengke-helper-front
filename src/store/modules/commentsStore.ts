@@ -76,7 +76,7 @@ export const useCommentsStore = defineStore('comments', () => {
 
     function addComment(commentData: Omit<AddCommentPayload, 'authorId'>): Promise<Comment | null> {
         const userStore = useUserStore();
-        if (!userStore.currentUser?.id) {
+        if (!userStore.userInfo.id) {
             ElMessage.error('请先登录再发表评论');
             return Promise.resolve(null);
         }
@@ -109,7 +109,7 @@ export const useCommentsStore = defineStore('comments', () => {
 
     function deleteComment(commentId: string | number, postId: string | number): Promise<boolean> {
         const userStore = useUserStore();
-        if (!userStore.currentUser?.id) {
+        if (!userStore.userInfo.id) {
             ElMessage.error('请先登录');
             return Promise.resolve(false);
         }

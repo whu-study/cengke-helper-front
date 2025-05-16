@@ -19,6 +19,7 @@ export interface LoginResponseData {
 // --- 注册请求体和响应数据类型 ---
 export interface RegisterPayload extends Omit<UserProfile, 'id' | 'createdAt' | 'avatar' | 'role' > {
     password?: string; // 注册时通常需要密码 (Password usually required for registration)
+    emailCode?: string;
     // confirmPassword?: string;
 }
 
@@ -38,11 +39,25 @@ export interface RegisterResponseData {
 export const apiLogin = (credentials: LoginCredentials): Promise<TransDef<LoginResponseData>> => {
     return myRequest<LoginCredentials, LoginResponseData>({
         method: 'POST',
-        url: `${apiPrefix}/auth/login`, // 示例端点 (Example endpoint)
+        url: `${apiPrefix}/auth/user-login`, // 示例端点 (Example endpoint)
         data: credentials,
     });
 };
+export const webSendEmailVerifyCode = (email: string):Promise<TransDef> => {
+    // return myRequest({
+    //     method: "POST",
+    //     url: apiPrefix+"/users/sendEmailVerifyCode",
+    //     data: {
+    //         email
+    //     }
+    return Promise.resolve({
+        code: 0,
+        data: null,
+        msg: "success"
 
+    })as unknown as Promise<TransDef>
+
+}
 /**
  * 用户注册
  * User registration.
@@ -51,7 +66,7 @@ export const apiLogin = (credentials: LoginCredentials): Promise<TransDef<LoginR
 export const apiRegister = (userInfo: RegisterPayload): Promise<TransDef<RegisterResponseData>> => {
     return myRequest<RegisterPayload, RegisterResponseData>({
         method: 'POST',
-        url: `${apiPrefix}/auth/register`, // 示例端点 (Example endpoint)
+        url: `${apiPrefix}/auth/user-register`, // 示例端点 (Example endpoint)
         data: userInfo,
     });
 };
