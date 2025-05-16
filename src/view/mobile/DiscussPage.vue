@@ -71,9 +71,9 @@ const fetchData = () => {
  * @param page 新的页码
  * @param limit 新的每页数量
  */
-const handlePageParamsChange = (page: number, limit: number) => {
-  currentApiParams.value.page = page;
-  currentApiParams.value.limit = limit;
+const handlePageParamsChange = (payload: { page: number; limit: number }) => {
+  currentApiParams.value.page = payload.page;
+  currentApiParams.value.limit = payload.limit;
   fetchData(); // 使用更新后的参数重新获取数据
 };
 

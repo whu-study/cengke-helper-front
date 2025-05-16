@@ -1,13 +1,15 @@
 <template>
   <div class="post-list-container">
-    <div v-if="showControls" class="controls-container el-card is-always-shadow" :style="{ marginBottom: '2vw', padding: '1.5vw' }">
+    <h2 v-if="pageTitle" class="list-title">{{ pageTitle }}</h2>
+
+    <div v-if="showControls" class="controls-container el-card is-always-shadow">
       <el-form inline :model="localFilterSortState" label-width="auto" label-position="left">
         <el-form-item label="排序方式" class="control-item">
           <el-select
             v-model="localFilterSortState.sortBy"
             placeholder="选择排序"
             @change="onSortChange"
-            :style="{ width: '15vw' }"
+            class="control-select"
           >
             <el-option label="最新发布" value="createdAt_desc"></el-option>
             <el-option label="最早发布" value="createdAt_asc"></el-option>
@@ -22,7 +24,7 @@
             clearable
             @input="onFilterTextChangeDebounced"
             @clear="onFilterTextChange"
-            :style="{ width: '25vw' }"
+            class="control-input"
           >
             <template #prepend>
               <el-icon><Search /></el-icon>
@@ -33,8 +35,8 @@
     </div>
 
     <div v-if="loading" class="loading-container">
-      <el-row :gutter="20">
-        <el-col :xs="24" :sm="12" :md="8" v-for="n in pageSize" :key="`skeleton-${n}`" :style="{ marginBottom: '2vw' }">
+      <el-row :gutter="responsiveGutter">
+        <el-col :xs="24" :sm="12" :md="8" v-for="n in pageSize" :key="`skeleton-${n}`" class="list-item-col">
           <el-card shadow="hover">
             <el-skeleton :rows="5" animated />
           </el-card>
@@ -43,31 +45,32 @@
     </div>
 
     <el-empty
-      v-else-if="!loading && posts.length === 0"
-      :description="hasActiveFilters ? '没有匹配的帖子，尝试调整筛选条件' : '暂无任何帖子'"
+      v-else-if="!loading && postsToDisplay.length === 0"
+      :description="emptyDescription"
       :image-size="100"
     >
-      <el-button v-if="hasActiveFilters" type="primary" @click="clearAllFilters">清空筛选和排序</el-button>
+      <el-button v-if="hasActiveFilters && showControls" type="primary" @click="clearAllFilters">清空筛选和排序</el-button>
+      <el-button v-else-if="!hasActiveFilters && showCreateButton" type="primary" @click="goToCreatePost">去发布第一篇帖子</el-button>
     </el-empty>
 
-    <el-row :gutter="20" v-else>
+    <el-row :gutter="responsiveGutter" v-else>
       <el-col
         :xs="24"
         :sm="12"
         :md="8"
-        v-for="post in posts"
+        v-for="post in postsToDisplay"
         :key="post.id"
-        :style="{ marginBottom: '2vw' }"
+        class="list-item-col"
       >
         <PostItem :post="post" />
       </el-col>
     </el-row>
 
-    <div v-if="showPagination && total > 0 && total > pageSize" class="pagination-container">
+    <div v-if="showPagination && totalPosts > 0 && totalPosts > pageSize" class="pagination-container">
       <el-pagination
         background
         layout="prev, pager, next, jumper, ->, total, sizes"
-        :total="total"
+        :total="totalPosts"
         :page-sizes="[6, 9, 12, 15, 30]"
         v-model:page-size="internalPageSize"
         v-model:current-page="internalCurrentPage"
@@ -81,54 +84,63 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, computed } from 'vue';
 import type { PropType } from 'vue';
-import PostItem from './PostItem.vue';
-import type { Post } from '@/types/discuss.ts';
+import PostItem from './PostItem.vue'; // 确保 PostItem.vue 在同一目录或正确路径
+import type { Post } from '@/types/discuss'; // 确保类型路径正确
 import { Search } from '@element-plus/icons-vue';
-import { debounce } from 'lodash-es'; // 引入 debounce
+import { debounce } from 'lodash-es';
+import { useRouter } from 'vue-router';
 
 // --- Props 定义 ---
 const props = defineProps({
+  // 如果父组件直接管理帖子数据列表 (例如从 store 获取后传递)
   posts: {
     type: Array as PropType<Post[]>,
-    required: true,
-    default: () => [],
+    default: () => [], // 如果 PostList 自己获取数据，这个 prop 可以设为可选或移除
   },
+  // 如果 PostList 自己获取数据，以下 prop 是必须的
   loading: {
     type: Boolean,
     default: false,
   },
+  total: { // 总帖子数，用于分页
+    type: Number,
+    default: 0,
+  },
+  currentPage: { // 当前页码
+    type: Number,
+    default: 1,
+  },
+  pageSize: { // 每页数量
+    type: Number,
+    default: 9,
+  },
+  // 控制UI元素
   showPagination: {
     type: Boolean,
     default: true,
   },
-  initialPageSize: { // 这个 prop 可以考虑移除，让 pageSize 直接由父组件或 store 控制
-    type: Number,
-    default: 9,
-  },
-  showControls: {
+  showControls: { // 是否显示排序和筛选控件
     type: Boolean,
     default: true,
   },
-  // 从父组件接收分页和筛选排序状态，最终它们应该来自 store
-  total: { // 总帖子数
-    type: Number,
-    required: true,
+  pageTitle: { // 页面/列表的标题
+    type: String,
+    default: '',
   },
-  currentPage: { // 当前页码
-    type: Number,
-    required: true,
+  showCreateButton: { // 在空状态时是否显示“去发布”按钮
+    type: Boolean,
+    default: false, // 通常在通用列表页为 true，在“我的帖子”页可能为 true
   },
-  pageSize: { // 每页数量
-    type: Number,
-    required: true,
+  // 筛选和排序相关的 props
+  authorId: { // 核心：用于筛选特定作者的帖子
+    type: [String, Number],
+    default: null,
   },
-  // 父组件维护的筛选和排序状态，可以双向绑定或通过事件更新
-  // 这里我们假设父组件会传递这些初始值，并且 PostList 通过事件通知父组件更改
-  currentSortBy: {
+  currentSortBy: { // 父组件管理的当前排序方式
     type: String,
     default: 'createdAt_desc',
   },
-  currentFilterText: {
+  currentFilterText: { // 父组件管理的当前筛选文本
     type: String,
     default: '',
   },
@@ -136,215 +148,201 @@ const props = defineProps({
 
 // --- Emits 定义 ---
 const emit = defineEmits<{
-  (e: 'page-change', page: number, limit: number): void; // 页码或每页数量变化
-  (e: 'filter-change', filters: { sortBy?: string; filterText?: string }): void; // 筛选或排序条件变化
+  (e: 'page-change', payload: { page: number; limit: number }): void;
+  (e: 'filter-change', filters: { sortBy?: string; filterText?: string; authorId?: string | number | null }): void;
 }>();
 
+const router = useRouter();
+
 // --- 本地响应式状态 ---
-// 用于控件双向绑定，其变化会触发 emit 事件
 const localFilterSortState = ref({
   sortBy: props.currentSortBy,
   filterText: props.currentFilterText,
 });
-
-// 用于分页组件双向绑定，其变化会触发 emit 事件
 const internalCurrentPage = ref(props.currentPage);
 const internalPageSize = ref(props.pageSize);
 
 // --- 计算属性 ---
-// 判断是否有激活的筛选或非默认排序
+const postsToDisplay = computed(() => props.posts); // 直接使用父组件传入的 posts
+const totalPosts = computed(() => props.total); // 使用父组件传入的 total
+
 const hasActiveFilters = computed(() => {
-  return localFilterSortState.value.filterText !== '' || localFilterSortState.value.sortBy !== 'createdAt_desc';
+  // 如果 authorId 存在，也认为是一种“激活的筛选”状态，影响空状态提示
+  return localFilterSortState.value.filterText !== '' ||
+         localFilterSortState.value.sortBy !== 'createdAt_desc' ||
+         !!props.authorId; // 如果 authorId 存在
 });
 
+const emptyDescription = computed(() => {
+  if (props.loading) return '正在加载帖子...';
+  if (props.authorId && postsToDisplay.value.length === 0) return '您还没有发布过任何帖子。';
+  if (hasActiveFilters.value && postsToDisplay.value.length === 0) return '没有匹配的帖子，尝试调整筛选条件。';
+  return '暂无任何帖子';
+});
+
+const responsiveGutter = computed(() => window.innerWidth < 768 ? 16 : 20);
+
+
 // --- 侦听器 ---
-// 侦听来自父组件的 props 变化，同步本地分页状态
-watch(() => props.currentPage, (newPage) => {
-  internalCurrentPage.value = newPage;
-});
-watch(() => props.pageSize, (newSize) => {
-  internalPageSize.value = newSize;
-});
-// 侦听父组件传递的筛选排序状态，同步本地控件状态
-watch(() => props.currentSortBy, (newSortBy) => {
-  localFilterSortState.value.sortBy = newSortBy;
-});
-watch(() => props.currentFilterText, (newFilterText) => {
-  localFilterSortState.value.filterText = newFilterText;
-});
+watch(() => props.currentPage, (newPage) => internalCurrentPage.value = newPage);
+watch(() => props.pageSize, (newSize) => internalPageSize.value = newSize);
+watch(() => props.currentSortBy, (newSort) => localFilterSortState.value.sortBy = newSort);
+watch(() => props.currentFilterText, (newText) => localFilterSortState.value.filterText = newText);
+
+// 当 authorId, sortBy, 或 filterText 任何一个变化时，都应该通知父组件重新获取数据
+// 这是一个集中的侦听器，而不是单独侦听每个筛选条件
+watch(
+  () => ({
+    authorId: props.authorId,
+    sortBy: localFilterSortState.value.sortBy, // 监听本地状态，因为控件绑定的是本地状态
+    filterText: localFilterSortState.value.filterText, // 同上
+  }),
+  (newFilters, oldFilters) => {
+    // 只有当实际的筛选条件变化时才触发，避免不必要的请求
+    // 这里可以加入更精细的判断，比如 immediate: true 时的首次触发处理
+    // 或者判断 newFilters 和 oldFilters 是否真的不同
+    if (JSON.stringify(newFilters) !== JSON.stringify(oldFilters) || !oldFilters) { // 简单比较
+        emit('filter-change', {
+            sortBy: newFilters.sortBy,
+            filterText: newFilters.filterText,
+            authorId: newFilters.authorId, // 将 authorId 包含在 filter-change 事件中
+        });
+    }
+  },
+  { deep: true, immediate: true } // immediate 确保挂载时根据初始props触发一次
+);
 
 
 // --- 事件处理函数 ---
-
-// 页码变化时触发
 const handleCurrentPageChange = (page: number) => {
-  internalCurrentPage.value = page; // 更新本地状态（如果 pagination 是 v-model，会自动更新）
-  emit('page-change', page, internalPageSize.value);
+  internalCurrentPage.value = page;
+  emit('page-change', { page, limit: internalPageSize.value });
 };
 
-// 每页数量变化时触发
 const handleSizeChange = (size: number) => {
-  internalPageSize.value = size; // 更新本地状态
-  // 当每页数量变化时，通常将页码重置到第一页，并发出事件
-  internalCurrentPage.value = 1;
-  emit('page-change', 1, size);
+  internalPageSize.value = size;
+  internalCurrentPage.value = 1; // 通常改变每页数量时回到第一页
+  emit('page-change', { page: 1, limit: size });
 };
 
-// 排序方式变化时触发
 const onSortChange = () => {
-  // localFilterSortState.value.sortBy 已经通过 v-model 更新
-  emit('filter-change', { sortBy: localFilterSortState.value.sortBy, filterText: localFilterSortState.value.filterText });
+  // localFilterSortState.value.sortBy 已通过 v-model 更新
+  // 筛选条件变化由集中的 watch 处理
 };
 
-// 筛选文本变化时触发 (无防抖)
 const onFilterTextChange = () => {
-  emit('filter-change', { sortBy: localFilterSortState.value.sortBy, filterText: localFilterSortState.value.filterText });
+  // localFilterSortState.value.filterText 已通过 v-model 更新
+  // 筛选条件变化由集中的 watch 处理
 };
 
-// 防抖处理筛选文本输入
-const onFilterTextChangeDebounced = debounce(() => {
-  onFilterTextChange();
-}, 500); // 500毫秒防抖
+const onFilterTextChangeDebounced = debounce(onFilterTextChange, 600);
 
-// 清空所有筛选和排序，并通知父组件
 const clearAllFilters = () => {
-  localFilterSortState.value.sortBy = 'createdAt_desc'; // 重置为默认排序
+  localFilterSortState.value.sortBy = 'createdAt_desc';
   localFilterSortState.value.filterText = '';
-  emit('filter-change', { sortBy: localFilterSortState.value.sortBy, filterText: localFilterSortState.value.filterText });
+  // 清空筛选时不应改变 authorId，因为它定义了列表的上下文
+  // 筛选条件变化由集中的 watch 处理，它会使用当前的 props.authorId
 };
 
+const goToCreatePost = () => {
+  router.push({ name: 'CreatePost' }); // 假设发布页路由名为 CreatePost
+};
 
 // --- 生命周期钩子 ---
 onMounted(() => {
-  // 初始化时，如果 pageSize 与 initialPageSize 不同，可以考虑同步一次
-  // 但更推荐由父组件通过 prop (pageSize) 直接控制
-  if (props.pageSize !== props.initialPageSize && props.initialPageSize) {
-      // internalPageSize.value = props.initialPageSize;
-      // emit('page-change', internalCurrentPage.value, props.initialPageSize);
-      // 或者，如果 initialPageSize 只是一个建议，则以父组件的 pageSize 为准
-  }
+  // 同步本地分页状态，以防父组件的初始值与 ref 的默认值不同
   internalCurrentPage.value = props.currentPage;
   internalPageSize.value = props.pageSize;
   localFilterSortState.value.sortBy = props.currentSortBy;
   localFilterSortState.value.filterText = props.currentFilterText;
+
+  // 移除此处单独的 emit('filter-change')，因为上面的 watch(..., {immediate: true}) 会在挂载时处理
 });
 
 </script>
 
 <style scoped>
-/* 组件根元素样式 */
 .post-list-container {
-  padding: 4vw 3vw; /* 增大内边距，便于移动端操作 */
-  background-color: #f9fafb;
-  border-radius: 3vw; /* 增大圆角 */
+  padding: clamp(16px, 3vw, 24px);
+  background-color: var(--el-bg-color-page, #f0f2f5); /* 使用 Element Plus 变量或默认值 */
+  border-radius: 8px;
 }
 
-/* 加载状态容器样式 */
+.list-title {
+  font-size: clamp(20px, 2.5vw, 28px);
+  color: var(--el-text-color-primary, #303133);
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.controls-container {
+  border-radius: 8px;
+  background-color: var(--el-bg-color-overlay, #ffffff);
+  margin-bottom: 20px;
+  padding: 16px;
+  box-shadow: var(--el-box-shadow-light);
+}
+
+.controls-container .el-form {
+  display: flex;
+  flex-wrap: wrap; /* 允许换行 */
+  gap: 16px;
+}
+
+.controls-container .el-form-item {
+  margin-bottom: 0; /* el-form 的 gap 会处理间距 */
+  flex-grow: 1; /* 允许表单项伸展 */
+}
+
+.control-select,
+.control-input {
+  width: 100%; /* 在 flex item 中占满 */
+  min-width: 180px; /* 防止过窄 */
+}
+
+
 .loading-container {
-  margin-top: 4vw;
+  margin-top: 20px;
 }
 
-/* 分页控件容器样式 */
+.list-item-col {
+  margin-bottom: clamp(16px, 3vw, 20px); /* 统一列表项间距 */
+}
+
 .pagination-container {
   display: flex;
   justify-content: center;
-  margin-top: 5vw; /* 增大间距 */
-  padding-bottom: 3vw;
+  margin-top: 25px;
+  padding-bottom: 10px;
 }
 
-/* 分页组件自定义样式 */
 .pagination-container .el-pagination {
-  flex-wrap: wrap; /* 允许分页组件换行 */
+  flex-wrap: wrap;
   justify-content: center;
 }
 
-/* 排序和筛选控件容器样式 */
-.controls-container {
-  border-radius: 3vw;
-  background-color: #fff;
-  margin-bottom: 4vw !important; /* 覆盖内联样式 */
-  padding: 3vw !important; /* 覆盖内联样式 */
-}
-
-/* 表单控件样式 */
-.controls-container .el-form {
-  display: flex;
-  flex-direction: column; /* 移动端改为垂直布局 */
-  gap: 3vw; /* 使用 gap 替代 margin */
-}
-
-/* 表单项样式 */
-.controls-container .el-form-item {
-  margin-bottom: 0;
-  width: 100%; /* 宽度占满 */
-}
-
-/* 输入框和选择器样式 */
-.controls-container .el-input,
-.controls-container .el-select {
-  width: 100% !important; /* 宽度占满 */
-}
-
-/* 选择器下拉菜单样式 */
-.controls-container .el-select-dropdown {
-  max-width: 80vw; /* 限制最大宽度 */
-}
-
-/* 优化 el-empty 空状态组件的样式 */
 .el-empty {
-  padding: 10vw 0; /* 增大内边距 */
+  padding: 40px 0;
 }
 
 .el-empty__description {
-  font-size: 4vw; /* 增大字体 */
-  margin-top: 3vw;
+  font-size: 16px;
+  margin-top: 12px;
 }
 
-/* 卡片项间距调整 */
-.el-col {
-  margin-bottom: 4vw !important; /* 增大卡片间距 */
-}
-
-/* 响应式调整：小屏幕优化 */
-@media (max-width: 420px) {
-  /* 进一步增大字体和间距 */
-  .post-list-container {
-    padding: 5vw 4vw;
+/* 响应式调整 */
+@media (max-width: 767px) { /* 典型的移动端断点 */
+  .controls-container .el-form {
+    flex-direction: column;
   }
-
-  .controls-container {
-    border-radius: 4vw;
+  .control-select,
+  .control-input {
+    min-width: unset; /* 移动端允许更窄 */
   }
-
-  .el-empty__description {
-    font-size: 4.5vw;
-  }
-
-  /* 分页组件在小屏幕上简化 */
-  .pagination-container .el-pagination__total,
-  .pagination-container .el-pagination__jump {
-    display: none; /* 隐藏总条数和跳转 */
-  }
-
-  .pagination-container .el-pagination__sizes {
-    width: 100%; /* 每页条数选择器占满一行 */
-    margin-top: 3vw;
-  }
-}
-
-/* 响应式调整：超小屏幕优化 */
-@media (max-width: 320px) {
-  .post-list-container {
-    padding: 6vw 4vw;
-  }
-
-  .controls-container {
-    padding: 4vw !important;
-  }
-
-  /* 进一步简化分页 */
-  .pagination-container .el-pagination__sizes {
-    display: none;
+  .list-title {
+    font-size: clamp(18px, 5vw, 24px);
+    margin-bottom: 16px;
   }
 }
 </style>

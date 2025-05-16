@@ -59,7 +59,7 @@ export interface ToggleLikeCommentResponseData {
 export const apiGetCommentsByPostId = (postId: string | number, params?: GetCommentsParams): Promise<TransDef<GetCommentsResponseData>> => {
     return myRequest<never, GetCommentsResponseData>({
         method: 'GET',
-        url: `${apiPrefix}/posts/${postId}/comments`,
+        url: `${apiPrefix}/posts/comments/${postId}`,
         params: params,
     });
 };

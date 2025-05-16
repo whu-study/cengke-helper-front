@@ -42,6 +42,9 @@ export const usePostsStore = defineStore('posts', () => {
     const getPostByIdFromState = computed(() => {
         return (id: string | number) => posts.value.find(post => post.id.toString() === id.toString());
     });
+    function clearCurrentPost() {
+        currentPost.value = null;
+    }
 
     // --- Actions ---
     /**
@@ -80,18 +83,29 @@ export const usePostsStore = defineStore('posts', () => {
     function fetchPostById(postId: string | number): Promise<void> {
         isLoading.value = true;
         error.value = null;
-        currentPost.value = null;
+        currentPost.value = null; // 请求开始前清空，避免旧数据闪烁
+    
+        // 返回 Promise 链
         return apiGetPostById(postId)
             .then((response: TransDef<Post>) => {
                 if (response.code === 0 && response.data) {
-                    currentPost.value = response.data;
+                    currentPost.value = response.data; // 关键：确保 response.data 包含最新的用户交互状态"
+                    // console.log('currentPost.value', currentPost.value);
+                    console.log('response.data', response.data);
                 } else {
-                    throw new Error(response.msg || `帖子 ID ${postId} 未找到`);
+                    // 如果 code 不为 0 或 data 为空，则抛出错误，由 .catch() 处理
+                    throw new Error(response.msg || `帖子 ID ${postId} 未找到或加载失败`);
                 }
             })
             .catch((err: any) => {
                 error.value = err.message || '获取帖子详情时发生错误';
-                console.error(`Fetch post by ID ${postId} error:`, err);
+                currentPost.value = null; // 发生错误时也清空帖子数据
+                console.error(`Workspace post by ID ${postId} error in store:`, err);
+                // 虽然我们在这里处理了错误，但为了符合 Promise<void> 的返回类型，
+                // 并且让调用者知道发生了错误（如果它也链接了 .catch()），
+                // 我们可以选择再次抛出错误或返回一个被拒绝的 Promise。
+                // 但通常，如果 store 内部处理了 UI 相关的错误状态，就不需要再向上抛了。
+                // 为了简单起见，这里我们不再次抛出。
             })
             .finally(() => {
                 isLoading.value = false;
@@ -218,34 +232,45 @@ export const usePostsStore = defineStore('posts', () => {
         });
     }
 
-    /**
+      /**
      * 切换帖子点赞状态
      * @param postId - 帖子ID
      */
-    function toggleLikePost(postId: string | number): Promise<ToggleLikeResponseData | null> {
-        // isLoading 状态通常由 LikeButton 组件自身管理，这里不设置全局 isLoading
+      function toggleLikePost(postId: string | number): Promise<ToggleLikeResponseData | null> {
+        const userStore = useUserStore();
+        if (!userStore.userInfo.id) {
+            ElMessage.error('请先登录后再点赞');
+            return Promise.reject(new Error('用户未登录'));
+        }
+
+        // 不再检查 currentPost.value 与 postId 是否匹配，允许在列表页直接点赞
+        // API 成功后，会尝试更新 currentPost (如果它恰好是这个帖子) 和列表中的帖子
+
         return new Promise((resolve, reject) => {
             apiToggleLikePost(postId)
                 .then((response: TransDef<ToggleLikeResponseData>) => {
                     if (response.code === 0 && response.data) {
-                        const updateTargetPost = (postToUpdate: Post | null) => {
-                            if (postToUpdate && postToUpdate.id.toString() === postId.toString()) {
-                                // 假设 Post 类型有 isLikedByCurrentUser 字段
-                                // (postToUpdate as any).isLikedByCurrentUser = response.data.isLiked;
-                                // 确保 Post 类型定义中包含 isLikedByCurrentUser
-                                if ('isLikedByCurrentUser' in postToUpdate) {
-                                    postToUpdate.isLikedByCurrentUser = response.data.isLiked;
-                                }
-                                postToUpdate.likesCount = response.data.likesCount;
-                            }
-                        };
-                        updateTargetPost(currentPost.value);
+                        // 1. 更新 currentPost (如果当前详情页显示的是这个帖子)
+                        if (currentPost.value && currentPost.value.id.toString() === postId.toString()) {
+                            currentPost.value.isLikedByCurrentUser = response.data.isLiked;
+                            currentPost.value.likesCount = response.data.likesCount;
+                        }
+
+                        // 2. 更新帖子列表中的对应项 (如果存在)
                         const postInList = posts.value.find(p => p.id.toString() === postId.toString());
                         if (postInList) {
-                            updateTargetPost(postInList);
-                            // 手动触发列表更新，如果深层对象属性变化 Vue 可能无法检测
-                            // posts.value = [...posts.value];
+                            postInList.isLikedByCurrentUser = response.data.isLiked;
+                            postInList.likesCount = response.data.likesCount;
+                            // 为了确保深层对象属性的更改能被Vue检测到以更新列表视图，
+                            // 可以考虑替换整个对象或使用Vue.set/this.$set (在Vue2中)
+                            // 在Vue3+Setup中，直接修改 ref 对象的属性通常是响应式的。
+                            // 如果列表渲染不更新，可以尝试:
+                            // const index = posts.value.findIndex(p => p.id.toString() === postId.toString());
+                            // if (index !== -1) {
+                            //   posts.value[index] = { ...postInList }; // 创建新对象以触发更新
+                            // }
                         }
+                        // ElMessage.success(response.data.isLiked ? '点赞成功' : '已取消点赞'); // 按钮组件可自行提示
                         resolve(response.data);
                     } else {
                         throw new Error(response.msg || '点赞操作失败');
@@ -253,52 +278,53 @@ export const usePostsStore = defineStore('posts', () => {
                 })
                 .catch((err: any) => {
                     ElMessage.error(err.message || '点赞操作时发生错误');
-                    console.error(`Toggle like for post ${postId} error:`, err);
-                    reject(err);
+                    console.error(`[PostsStore] Toggle like for post ${postId} error:`, err);
+                    reject(err); // 将错误传递给调用方 (LikeButton)
                 });
         });
     }
-    /** ★ 新增：切换帖子收藏状态 (Toggle post collect status)
-     * @param postId - 帖子ID (Post ID)
+
+    /**
+     * 切换帖子收藏状态
+     * @param postId - 帖子ID
      */
     function toggleCollectPost(postId: string | number): Promise<ToggleCollectResponseData | null> {
-        // 通常收藏操作的 isLoading 也可以由按钮自身管理
-        // 如果需要全局加载状态，可以在这里设置 this.isLoading = true; 和 finally 中 false
+        const userStore = useUserStore();
+        if (!userStore.userInfo.id) {
+            ElMessage.error('请先登录后再收藏');
+            return Promise.reject(new Error('用户未登录'));
+        }
+
         return new Promise((resolve, reject) => {
-            apiToggleCollectPost(postId) // 假设 apiToggleCollectPost 不需要 currentUserId，后端从 token 获取
+            apiToggleCollectPost(postId)
                 .then((response: TransDef<ToggleCollectResponseData>) => {
                     if (response.code === 0 && response.data) {
-                        // 更新帖子列表或当前帖子中的收藏信息
-                        const updateTargetPostCollection = (postToUpdate: Post | null) => {
-                            if (postToUpdate && postToUpdate.id.toString() === postId.toString()) {
-                                // 确保 Post 类型定义中有 isFavoritedByCurrentUser (或者您用的 isCollected)
-                                // 以及 collectCount (如果后端返回)
-                                if ('isCollectedByCurrentUser' in postToUpdate) { // 假设您 Post 类型中用的是 isFavoritedByCurrentUser
-                                    postToUpdate.isCollectedByCurrentUser = response.data.isCollected;
-                                }
-                                if ('collectCount' in postToUpdate) {
-                                   postToUpdate.collectCount = response.data.collectCount;
-                                }
-                                // 如果后端不返回总收藏数，或者前端不直接显示，可以只更新 isCollected 状态
-                            }
-                        };
+                        // 1. 更新 currentPost (如果当前详情页显示的是这个帖子)
+                        if (currentPost.value && currentPost.value.id.toString() === postId.toString()) {
+                            currentPost.value.isCollectedByCurrentUser = response.data.isCollected;
+                            currentPost.value.collectCount = response.data.collectCount;
+                        }
 
-                        updateTargetPostCollection(currentPost.value);
+                        // 2. 更新帖子列表中的对应项
                         const postInList = posts.value.find(p => p.id.toString() === postId.toString());
                         if (postInList) {
-                            updateTargetPostCollection(postInList);
-                            // 如果 posts 数组的深层更新没有触发视图更新，可以考虑:
-                            // posts.value = [...posts.value];
+                            postInList.isCollectedByCurrentUser = response.data.isCollected;
+                            postInList.collectCount = response.data.collectCount;
+                            // const index = posts.value.findIndex(p => p.id.toString() === postId.toString());
+                            // if (index !== -1) {
+                            //   posts.value[index] = { ...postInList };
+                            // }
                         }
-                        resolve(response.data); // 返回 { isCollected, collectCount }
+                        // ElMessage.success(response.data.isCollected ? '收藏成功' : '已取消收藏');
+                        resolve(response.data);
                     } else {
                         throw new Error(response.msg || '收藏操作失败');
                     }
                 })
                 .catch((err: any) => {
                     ElMessage.error(err.message || '收藏操作时发生错误');
-                    console.error(`Toggle collect for post ${postId} error:`, err);
-                    reject(err); // 让调用方也能捕获
+                    console.error(`[PostsStore] Toggle collect for post ${postId} error:`, err);
+                    reject(err);
                 });
         });
     }
@@ -316,5 +342,6 @@ export const usePostsStore = defineStore('posts', () => {
         deletePost,
         toggleLikePost,
         toggleCollectPost,
+        clearCurrentPost,
     };
 });

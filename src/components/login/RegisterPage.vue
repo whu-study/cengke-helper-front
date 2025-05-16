@@ -2,13 +2,12 @@
 import { ref, reactive ,computed} from 'vue'
 import { ElMessage } from 'element-plus'
 import Identify from '@/components/login/IdentifyCode.vue'
-import { webSendEmailVerifyCode, webUserRegister} from '@/api/register.ts'
+import { webSendEmailVerifyCode, apiRegister} from '@/api/authService.ts'
 import type {TransDef} from "@/api/myAxios.ts";
 import  {successCode} from "@/api/myAxios.ts";
 import {useRouter} from "vue-router";
-import {useUserStore, useUserToken} from "@/store/modules/user.ts";
+import {useUserStore, useUserToken} from "@/store/modules/userStore.ts";
 import type {UserProfile} from "@/types/user.ts";
-
 const userStore=useUserStore()
 const userToken=useUserToken()
 const router=useRouter()
@@ -208,7 +207,10 @@ const submitForm = async () => {
   //提交注册表单
   console.log('提交注册表单')
   try {
-    const result=await webUserRegister(realData.email,realData.password,formData.emailCode) as TransDef
+
+    const result=await apiRegister({email:realData.email,
+      password:realData.password,
+      emailCode:formData.emailCode}) as TransDef
     if(result.code===successCode){
       ElMessage.success(result.msg+"正在为您自动登录")
       router.push('/')

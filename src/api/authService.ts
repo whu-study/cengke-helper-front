@@ -3,9 +3,7 @@ import { myRequest, type TransDef } from './myAxios';
 import { apiPrefix } from './globalConst';
 import type { UserProfile } from '@/types/user';
 
-// --- 登录请求体和响应数据类型 ---
 export interface LoginCredentials {
-    username?: string; // 根据你的后端要求，可能是用户名或邮箱 (Based on your backend requirements, could be username or email)
     email?: string;
     password?: string;
     // captcha?: string; // 例如，验证码 (e.g., captcha)
@@ -17,8 +15,10 @@ export interface LoginResponseData {
 }
 
 // --- 注册请求体和响应数据类型 ---
-export interface RegisterPayload extends Omit<UserProfile, 'id' | 'createdAt' | 'avatar' | 'role' > {
-    password?: string; // 注册时通常需要密码 (Password usually required for registration)
+export interface RegisterPayload  {
+    password: string; // 注册时通常需要密码 (Password usually required for registration)
+    emailCode:string;
+    email:string;
     // confirmPassword?: string;
 }
 
@@ -26,22 +26,30 @@ export interface RegisterResponseData {
     token: string;
     user: UserProfile; // 注册成功后返回创建的用户信息 (Return created user info after successful registration)
 }
+export  const apiLogin=(userInfo:LoginCredentials):Promise<TransDef>=>{
+    return myRequest<LoginCredentials,LoginResponseData>({
+        method:'POST',
+        url:`${apiPrefix}/auth/user-login`,
+        data:userInfo
+    })
+}
 
+export const webSendEmailVerifyCode = (email: string):Promise<TransDef> => {
+    // return myRequest({
+    //     method: "POST",
+    //     url: apiPrefix+"/users/sendEmailVerifyCode",
+    //     data: {
+    //         email
+    //     }
+    return Promise.resolve({
+        code: 0,
+        data: null,
+        msg: "success"
 
-// --- API 服务函数 ---
+    })as unknown as Promise<TransDef>
 
-/**
- * 用户登录
- * User login.
- * @param credentials - 登录凭据 (Login credentials)
- */
-export const apiLogin = (credentials: LoginCredentials): Promise<TransDef<LoginResponseData>> => {
-    return myRequest<LoginCredentials, LoginResponseData>({
-        method: 'POST',
-        url: `${apiPrefix}/auth/login`, // 示例端点 (Example endpoint)
-        data: credentials,
-    });
-};
+}
+
 
 /**
  * 用户注册
@@ -51,7 +59,7 @@ export const apiLogin = (credentials: LoginCredentials): Promise<TransDef<LoginR
 export const apiRegister = (userInfo: RegisterPayload): Promise<TransDef<RegisterResponseData>> => {
     return myRequest<RegisterPayload, RegisterResponseData>({
         method: 'POST',
-        url: `${apiPrefix}/auth/register`, // 示例端点 (Example endpoint)
+        url: `${apiPrefix}/auth/user-register`, // 示例端点 (Example endpoint)
         data: userInfo,
     });
 };
@@ -94,3 +102,4 @@ export const apiUpdateUserProfile = (profileData: Partial<UserProfile>): Promise
         data: profileData,
     });
 };
+
