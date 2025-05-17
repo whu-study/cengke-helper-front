@@ -1,6 +1,5 @@
 import axios, {type AxiosRequestConfig} from "axios";
 import {userTokenKey, baseURL} from "./globalConst";
-import {ElMessage} from "element-plus";
 
 export interface TransDef {
     code: number
@@ -10,7 +9,7 @@ export interface TransDef {
 
 
 const myAxios = axios.create({baseURL});
-export const successCode=0
+
 // 请求拦截器
 myAxios.interceptors.request.use(config => {
     // TODO 这里吧本地的token添加到请求头中
@@ -67,7 +66,7 @@ myAxios.interceptors.response.use(
 
                 }
                 console.log("请求有误")
-                ElMessage.error(msg)
+                showErrorMsg(msg)
                 break;
             }
             default: // 未知错误
