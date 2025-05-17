@@ -2,11 +2,11 @@
 <script setup lang="ts">
 import {ref, reactive, onMounted} from 'vue'
 import { View, Hide } from '@element-plus/icons-vue'
-import {webSendLogin} from "@/api/login.ts";
+import {apiLogin} from "@/api/authService.ts";
 import {successCode} from "@/api/myAxios.ts";
 import {useRouter} from "vue-router";
 import {ElMessage} from "element-plus";
-import {useUserStore, useUserToken} from "@/store/modules/user.ts";
+import {useUserStore, useUserToken} from "@/store/modules/userStore.ts";
 import type {UserProfile} from "@/types/user.ts";
 import Cookies from 'js-cookie';
 import JSEncrypt from 'jsencrypt';  // 引入加密库
@@ -105,7 +105,7 @@ const handleLogin =async () => {
   console.log('请求登录')
 
   try {
-    const result =await webSendLogin(loginForm.email,loginForm.password)
+    const result =await apiLogin({email:loginForm.email,password:loginForm.password})
     if(result.code===successCode){
       //成功登录处理逻辑，储存用户信息和记录登录状态
       console.log('登录成功',result.msg)

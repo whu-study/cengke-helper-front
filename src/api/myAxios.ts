@@ -1,10 +1,11 @@
 import axios, {type AxiosRequestConfig} from "axios";
 import {userTokenKey, baseURL} from "./globalConst";
 import {ElMessage} from "element-plus";
+import { useUserToken } from '@/store/modules/userStore';
 
-export interface TransDef {
+export interface TransDef<T = any> {
     code: number
-    data: object
+    data: T
     msg: string
 }
 
@@ -13,8 +14,10 @@ const myAxios = axios.create({baseURL});
 export const successCode=0
 // 请求拦截器
 myAxios.interceptors.request.use(config => {
-    // TODO 这里吧本地的token添加到请求头中
-    const token = localStorage.getItem(userTokenKey);
+    // 从 store 中获取 token
+    const userToken = useUserToken();
+    const token = userToken.token;
+
     if (token) {
         config.headers.Authorization = `${token}`;
     }
@@ -86,6 +89,7 @@ myAxios.interceptors.response.use(
     }
 )
 
-export function myRequest<T, R>(config: AxiosRequestConfig<T>): Promise<R> {
-    return myAxios(config) as unknown as Promise<R>;
+// myAxios.ts
+export function myRequest<T = never, R = any>(config: AxiosRequestConfig<T>): Promise<TransDef<R>> {
+    return myAxios(config);
 }
