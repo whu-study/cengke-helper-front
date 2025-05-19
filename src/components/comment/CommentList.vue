@@ -72,7 +72,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed, nextTick } from 'vue';
 import type { PropType } from 'vue';
-import CommentItem from './CommentItem.vue'; // 调整路径
+import CommentItem from '@/components/comment/CommentItem.vue'; // 调整路径
 // import type { Comment } from '@/types/discuss'; // Comment 类型由 store 提供
 import { useCommentsStore } from '@/store/modules/commentsStore'; // 调整路径
 import { useUserStore } from '@/store/modules/userStore'; // 调整路径

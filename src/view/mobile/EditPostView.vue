@@ -44,7 +44,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import PostForm from '@/components/CreatePostForm.vue'; // 引入新的表单组件
+import PostForm from '@/components/post/CreatePostForm.vue'; // 引入新的表单组件
 import type { Post } from '@/types/discuss';
 import { ElMessage, ElNotification, ElSkeleton, ElAlert, ElEmpty, ElPageHeader, ElContainer, ElHeader, ElMain } from 'element-plus';
 import { apiGetPostById, apiUpdatePost, type UpdatePostBody } from '@/api/postService'; // 导入获取和更新API

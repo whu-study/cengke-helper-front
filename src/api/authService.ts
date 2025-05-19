@@ -17,9 +17,12 @@ export interface LoginResponseData {
 }
 
 // --- 注册请求体和响应数据类型 ---
-export interface RegisterPayload extends Omit<UserProfile, 'id' | 'createdAt' | 'avatar' | 'role' > {
-    password?: string; // 注册时通常需要密码 (Password usually required for registration)
-    emailCode?: string;
+export interface RegisterPayload extends Omit<UserProfile, 'id' | 'createdAt' | 'role'> {
+    password: string; // 注册时通常需要密码 (Password usually required for registration)
+    emailCode: string;
+    username: string; 
+    avatar: string;
+    bio: string;
     // confirmPassword?: string;
 }
 

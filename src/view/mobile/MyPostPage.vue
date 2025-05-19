@@ -34,7 +34,7 @@
   
   <script setup lang="ts">
   import { ref, onMounted, computed, watch } from 'vue';
-  import PostList from '@/components/PostList.vue'; // 确保路径正确
+  import PostList from '@/components/post/PostList.vue'; // 确保路径正确
   import { useRouter } from 'vue-router';
   import { EditPen } from '@element-plus/icons-vue';
   import { usePostsStore } from '@/store/modules/postsStore'; // 确保路径正确

@@ -53,7 +53,7 @@
 
 import {ref} from "vue";
 import KingArea from "@/view/helper/KingArea.vue";
-import {useCourseStore} from "@/store/modules/courseInfosStore.ts";
+import {useCourseStore} from "@/store/modules/coursesStore";
 
 const useCourse = useCourseStore();
 useCourse.fetchCourseData()
@@ -61,10 +61,10 @@ useCourse.fetchCourseData()
 
 const activeName = ref('1')
 
-watch(activeName,(value, oldValue)=>{
+import { watch } from 'vue'
+watch(activeName, (value: string, oldValue: string) => {
   useCourse.setCurrentDivision(Number(value)-1)
 })
-
 
 
 </script>

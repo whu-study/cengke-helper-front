@@ -111,7 +111,7 @@ import { useUserStore } from '@/store/modules/userStore'; // 调整路径
 import { useCommentsStore } from '@/store/modules/commentsStore'; // 调整路径
 import { ChatLineSquare, Delete } from '@element-plus/icons-vue';
 import { ElMessage, ElInput, ElDialog, ElButton, ElAvatar, ElText } from 'element-plus';
-import LikeButton from './LikeButton.vue'; // 假设 LikeButton.vue 已修改或能接收 postId
+import LikeButton from '@/components/LikeButton.vue'; // 假设 LikeButton.vue 已修改或能接收 postId
 import type { AddCommentPayload, ToggleLikeCommentResponseData } from '@/api/commentService';
 
 

@@ -147,13 +147,12 @@ const handleForgetPassword = () => {
   console.log('跳转忘记密码流程')
 }
 
-//定义可触发的状态改变事件
-const emit = defineEmits(['switchToRegister'])
+// //定义可触发的状态改变事件
+// const emit = defineEmits(['switchToRegister'])
 // 切换注册
 const switchToRegister = () => {
   // 这里可以触发注册组件切换
-  console.log('切换到注册界面')
-  emit('switchToRegister', false)
+  router.push('/register'); // <--- 修改这里： 使用路由跳转
 }
 </script>
 <template>

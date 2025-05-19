@@ -114,7 +114,7 @@ import { useRoute, useRouter } from 'vue-router';
 import type { Post } from '@/types/discuss';
 import { ElMessage, ElMessageBox, ElNotification, ElDialog } from 'element-plus';
 import { ArrowRight, Edit, Delete, View as ViewIcon } from '@element-plus/icons-vue';
-import CommentList from '@/components/CommentList.vue'; // 假设路径正确
+import CommentList from '@/components/comment/CommentList.vue'; // 假设路径正确
 import LikeButton from '@/components/LikeButton.vue';   // 假设路径正确
 
 // --- 引入 Store 和 Service ---

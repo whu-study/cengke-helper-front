@@ -1,5 +1,5 @@
 import {ref} from "vue";
-import type {CourseInfo} from "@/store/modules/courseInfosStore.ts";
+import type {CourseInfo} from "@/types/course.ts";
 import type {UserProfile} from "@/types/user.ts";
 
 export const validData = ref(true)
@@ -7,6 +7,7 @@ export const validData = ref(true)
 export const isGlobalDrawOpen = ref(false)
 
 export const globalCurCourseInfo = ref<CourseInfo>({
+    id: 0,
     courseName: "",
     courseTime: "",
     courseType: "",

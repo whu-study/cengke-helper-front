@@ -89,6 +89,10 @@ const props = defineProps({
   isSubmitting: { // 父组件控制的提交状态
     type: Boolean,
     default: false,
+  },
+  initialTags: { // 新增 prop
+    type: Array as () => string[],
+    default: () => [],
   }
 });
 
@@ -142,7 +146,43 @@ const submitButtonText = computed(() => {
   return props.isEditMode ? '确认更新' : '立即发布';
 });
 
-// --- 辅助函数：用于填充表单数据 ---
+
+
+// --- 生命周期钩子和侦听器 ---
+onMounted(() => {
+  if (props.isEditMode && props.editingPost) {
+    populateForm(props.editingPost);
+  }
+});
+watch(() => props.initialTags, (newTags) => {
+  if (!props.isEditMode && newTags && newTags.length > 0) {
+    // 仅在非编辑模式下，当 initialTags 变化时更新表单的 tags
+    // 避免在编辑模式下，initialTags (如果父组件意外传递) 覆盖正在编辑的帖子的标签
+    const currentTagsSet = new Set(postForm.tags);
+    newTags.forEach(tag => currentTagsSet.add(tag));
+    if (currentTagsSet.size <= 5) { // 假设标签上限为5
+        postForm.tags = Array.from(currentTagsSet);
+    } else {
+        postForm.tags = Array.from(currentTagsSet).slice(0, 5);
+        ElMessage.warning('自动添加的标签已达上限，部分预设标签可能未添加。');
+    }
+  }
+}, { deep: true, immediate: true });
+watch(() => props.editingPost, (newPostData) => {
+  if (props.isEditMode) {
+    populateForm(newPostData);
+  } else if (!props.isEditMode && !newPostData) {
+    // 如果从编辑模式切换回创建模式 (editingPost 变为 null)
+    // populateForm(null) 会清空 title 和 content
+    // 此时我们还需根据 initialTags 重设 tags
+    populateForm(null);
+    if (props.initialTags.length > 0) {
+        postForm.tags = [...props.initialTags].slice(0,5); // 确保不超过上限
+    }
+  }
+}, { deep: true }); // immediate 已在 initialTags 的 watch 中处理
+
+// 在 populateForm 中，当 postData 为 null (非编辑模式清空时)
 const populateForm = (postData: Post | null) => {
   if (postData) {
     postForm.title = postData.title;
@@ -151,24 +191,11 @@ const populateForm = (postData: Post | null) => {
   } else {
     postForm.title = '';
     postForm.content = '';
-    postForm.tags = [];
+    // postForm.tags = []; // 不在这里清空 tags，让 initialTags 的 watch 或 onMounted 处理
+                         // 或者如果确定 populateForm(null) 就是彻底重置，
+                         // 则由调用方在调用后根据 initialTags 重新设置
   }
 };
-
-// --- 生命周期钩子和侦听器 ---
-onMounted(() => {
-  if (props.isEditMode && props.editingPost) {
-    populateForm(props.editingPost);
-  }
-});
-
-watch(() => props.editingPost, (newPostData) => {
-  if (props.isEditMode) { // 只在编辑模式下根据 prop 更新
-    populateForm(newPostData);
-  } else if (!props.isEditMode && !newPostData) { // 如果从编辑模式切换回创建模式
-    populateForm(null); // 清空表单
-  }
-}, { deep: true, immediate: true });
 
 
 // --- 方法 ---
@@ -192,12 +219,12 @@ const handleSubmit = () => {
 
 const handleResetForm = () => {
   if (!postFormRef.value) return;
-  if (props.isEditMode) { // 编辑模式下，重置应恢复到 editingPost 的初始状态
+  if (props.isEditMode) {
     populateForm(props.editingPost);
     ElMessage.info('表单已恢复到初始编辑状态');
-  } else { // 创建模式下，完全清空
-    postFormRef.value.resetFields();
-    postForm.tags = []; // resetFields 可能不会清空 el-select multiple 的 v-model
+  } else {
+    postFormRef.value.resetFields(); // 这个会清空 title, content
+    postForm.tags = props.initialTags.length > 0 ? [...props.initialTags].slice(0,5) : []; // 根据 initialTags 重置
     ElMessage.info('表单已重置');
   }
 };
