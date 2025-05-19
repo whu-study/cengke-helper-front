@@ -39,8 +39,8 @@
   <div class="course-list" :style="{ transform: `translateX(${-segmentIndex * 100}%)` }">
     <div v-for="(building,idx) in buildings" :key="idx">
       <div :class="'w-[100vw] '+className">
-        <div v-for="teachInfo in building.infos">
-          <CourseCard :teach-info="teachInfo"/>
+        <div v-for="courseInfo in building.infos">
+          <CourseCard :course-info="courseInfo"/>
         </div>
 
         <div style="height: 3vw;"></div>
@@ -52,7 +52,9 @@
 <script lang="ts" setup>
 import {computed, nextTick, onMounted, ref, watch} from 'vue'
 import CourseCard from "@/view/helper/CourseCard.vue";
-import {type BuildingInfo, useCourseStore} from "@/store/modules/courseInfosStore.ts";
+import { useCourseStore} from "@/store/modules/coursesStore";
+import { toRef } from 'vue';
+import type { BuildingInfo } from '@/types/course';
 
 const props = defineProps<{
   divisionIndex: number;
