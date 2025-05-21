@@ -1,26 +1,23 @@
 <script setup lang="ts">
-
-
-import { ref, reactive, computed } from 'vue'
-import { ElMessage } from 'element-plus'
+import {ref, reactive, computed} from 'vue'
 import Identify from '@/components/login/IdentifyCode.vue'
-import { webSendEmailVerifyCode, apiRegister } from '@/api/authService.ts'
-import type { TransDef } from "@/api/myAxios.ts";
-import { successCode } from "@/api/myAxios.ts";
-import { useRouter } from "vue-router";
-import { useUserStore, useUserToken } from "@/store/modules/userStore.ts";
-import type { UserProfile } from "@/types/user.ts";
+import {webSendEmailVerifyCode, apiRegister} from '@/api/authService.ts'
+import type {TransDef} from "@/api/myAxios.ts";
+import {successCode} from "@/api/myAxios.ts";
+import {useRouter} from "vue-router";
+import {useUserStore, useUserToken} from "@/store/modules/userStore.ts";
+import type {UserProfile} from "@/types/user.ts";
+import {encryptPassword} from "@/utils/globalFunc.ts";
+import {globalLoginPageNo} from "@/store/custom/globalData.ts";
 
 const userStore = useUserStore()
 const userToken = useUserToken()
 const router = useRouter()
 
-// 1. 更新 ValidateFields 类型 (如果 username 也需要即时验证状态)
 type ValidateFields = 'username' | 'email' | 'captcha' | 'emailCode' | 'password' | 'confirmPassword' // 添加 'username'
 
-// 2. 更新 validate ref 对象 (如果 username 也需要即时验证状态)
 const validate = ref<Record<ValidateFields, boolean>>({
-  username: false, // 添加 username
+  username: false,
   email: false,
   captcha: false,
   emailCode: false,
@@ -28,17 +25,10 @@ const validate = ref<Record<ValidateFields, boolean>>({
   confirmPassword: false
 })
 
-const realData = reactive({
-  email: '',
-  password: '',
-  // username: '' // 通常用户名不需要在这里，因为不是发送验证码的依据
-})
 const formRef = ref()
-const ifCanRegister = ref(false)
 
-// 3. 表单数据: 添加 username
 const formData = reactive({
-  username: '', // 新增 username 字段
+  username: '',
   email: '',
   captcha: '',
   emailCode: '',
@@ -54,9 +44,8 @@ const updateCode = (code: string) => {
   console.log(captchaCode.value)
 }
 
-
 // 邮箱验证码发送
-const isSending = ref(false)
+const ifWaitingEmailCode = ref(false)
 const sendBtnText = ref('获取验证码')
 
 const validateFormItem = (field: ValidateFields) => {
@@ -69,106 +58,68 @@ const validateFormItem = (field: ValidateFields) => {
   });
 }
 
-// 是否允许发送验证码 (通常用户名不作为发送邮箱验证码的前置条件)
-// isvalid 计算属性通常基于 email, captcha, password, confirmPassword 的验证状态
-// 如果希望在填写用户名之前也不能发送验证码，则可以在下面加入 validate.value.username
-const isvalid = computed(() => {
-  return !(
-    validate.value.username && // 如果要求填写用户名后才能发送验证码
-    validate.value.email &&
-    validate.value.captcha &&
-    validate.value.password &&
-    validate.value.confirmPassword &&
-    !isSending.value
-  )
-})
-
 // 是否允许注册按钮可用
 const ifRegister = computed(() => {
   return !(
-    validate.value.username && // 添加 username 的验证状态
-    validate.value.email &&
-    validate.value.password &&
-    validate.value.confirmPassword &&
-    validate.value.emailCode &&
-    ifCanRegister.value // ifCanRegister 通常表示邮箱验证码已发送/验证通过
+      validate.value.username && // 添加 username 的验证状态
+      validate.value.email &&
+      validate.value.password &&
+      validate.value.confirmPassword &&
+      validate.value.emailCode
   )
 })
 
 
 const sendEmailCode = async () => {
-  // 确保在发送邮件验证码之前，用户名、邮箱、密码等已通过基础校验
-  // 例如，可以先校验用户名
-  if (!formData.username) {
-    ElMessage.error('请先输入用户名');
-    return;
-  }
-  // 也可以在这里触发一次用户名的校验
-  // await formRef.value?.validateField('username');
-  // if (!validate.value.username) return;
-
-
-  if (!formData.email) {
-    ElMessage.error('请先输入邮箱')
+  if (!formData.email||!validate.value.email) {
+    ElMessage.error('请先输入合法的邮箱')
     return
   }
-  // ... (保留原有发送邮件逻辑)
-  try {
-    const result = await webSendEmailVerifyCode(formData.email) as TransDef
+  ifWaitingEmailCode.value = true
 
-    if (result.code === successCode) {
-      console.log("发送成功", result.msg)
-      ElMessage.success(result.msg)
-      realData.email = formData.email
-      realData.password = formData.password
-      // realData.username = formData.username // 如果也需要保存用户名
-      ifCanRegister.value = true
-      isSending.value = true
-      let count = 60 // 通常设置为60秒
-      const timer = setInterval(() => {
-        sendBtnText.value = `${count}秒后重发`
-        if (count-- <= 0) {
-          clearInterval(timer)
-          isSending.value = false
-          sendBtnText.value = '获取验证码'
-        }
-      }, 1000)
-
-    } else {
-      console.log("发送失败", result.msg)
-      ElMessage.error(result.msg || "发送邮箱验证码失败，请检查邮箱或稍后再试") // 给一个通用提示
-    }
-  } catch (err) {
-    console.log("网络异常", err)
-    ElMessage.error("网络异常，发送失败")
+  const result = await webSendEmailVerifyCode(formData.email) as TransDef
+  if (result.code !== successCode) {
+    return
   }
+  console.log("发送成功", result.msg)
+  ElMessage.success(result.msg)
+  let count = 60 // 通常设置为60秒
+  const timer = setInterval(() => {
+    sendBtnText.value = `${count}秒后重发`
+    if (count-- <= 0) {
+      clearInterval(timer)
+      ifWaitingEmailCode.value = false
+      sendBtnText.value = '获取验证码'
+    }
+  }, 1000)
+
 }
 
 
 // 4. 表单验证规则: 添加 username 的规则
 const formRules = reactive({
   username: [ // 新增 username 验证规则
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 3, max: 15, message: '用户名长度应为3到15个字符', trigger: 'blur' },
-    { pattern: /^[a-zA-Z0-9_]+$/, message: '用户名只能包含字母、数字和下划线', trigger: 'blur' }
+    {required: true, message: '请输入用户名', trigger: 'blur'},
+    {min: 3, max: 15, message: '用户名长度应为3到15个字符', trigger: 'blur'},
+    {pattern: /^[a-zA-Z0-9_]+$/, message: '用户名只能包含字母、数字和下划线', trigger: 'blur'}
     // 可以根据需要添加更多规则，例如异步校验用户名是否已存在
   ],
   email: [
-    { required: true, message: '请输入邮箱', trigger: 'blur' },
-    { type: 'email', message: '邮箱格式不正确', trigger: 'blur' }
+    {required: true, message: '请输入邮箱', trigger: 'blur'},
+    {type: 'email', message: '邮箱格式不正确', trigger: 'blur'}
   ],
   captcha: [
-    { required: true, message: '请输入图形验证码', trigger: 'blur' },
+    {required: true, message: '请输入图形验证码', trigger: 'blur'},
     {
       validator: (rule: unknown, value: string, callback: Function) => {
         value.toLowerCase() !== captchaCode.value.toLowerCase()
-          ? callback(new Error('图形验证码错误'))
-          : callback()
+            ? callback(new Error('图形验证码错误'))
+            : callback()
       }
     }
   ],
   password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
+    {required: true, message: '请输入密码', trigger: 'blur'},
     {
       validator: (rule: unknown, value: string) => {
         if (value.length < 6 || value.length > 18) return false;
@@ -183,7 +134,7 @@ const formRules = reactive({
     }
   ],
   confirmPassword: [
-    { required: true, message: '请确认密码', trigger: 'blur' },
+    {required: true, message: '请确认密码', trigger: 'blur'},
     {
       validator: (rule: unknown, value: string) => value === formData.password,
       message: '两次输入密码不一致',
@@ -191,7 +142,7 @@ const formRules = reactive({
     }
   ],
   emailCode: [
-    { required: true, message: '请输入邮箱验证码', trigger: 'blur' },
+    {required: true, message: '请输入邮箱验证码', trigger: 'blur'},
     // 实际项目中邮箱验证码应该由后端校验，前端的 '123456' 仅为示例
     // {
     //   validator:( rule:unknown, value:string, callback:Function)=>{
@@ -219,44 +170,31 @@ const submitForm = async () => {
     return;
   }
 
-  // 再次检查 realData 中的 email 和 password 是否与当前 formData 一致，
-  // 防止用户在发送验证码后修改了这些关键信息而未重新发送验证码
-  if (formData.email !== realData.email || formData.password !== realData.password) {
-    ElMessage.error('邮箱或密码已更改，请重新发送验证码并校验');
-    ifCanRegister.value = false; // 可能需要重置这个状态
-    return;
-  }
-
 
   console.log('提交注册表单');
-  try {
-    // 注意：apiRegister 的参数应该与后端API定义一致
-    // 假设 apiRegister 接受 { email, password, username, emailCode, bio }
-    // bio 字段当前为空字符串，如果不需要可以不传或按API要求处理
-    const result = await apiRegister({
-      email: realData.email, // 使用发送验证码时锁定的邮箱
-      password: realData.password, // 使用发送验证码时锁定的密码
-      username: formData.username, // 使用当前表单中的用户名
-      emailCode: formData.emailCode, // 添加邮箱验证码到请求中
-      avatar: "",
-      bio: "" // 根据需要设置
-    }) as TransDef;
+  // 注意：apiRegister 的参数应该与后端API定义一致
+  // 假设 apiRegister 接受 { email, password, username, emailCode, bio }
+  // bio 字段当前为空字符串，如果不需要可以不传或按API要求处理
+  const result = await apiRegister({
+    email: formData.email,
+    password: encryptPassword(formData.password),
+    username: formData.username, // 使用当前表单中的用户名
+    emailCode: formData.emailCode, // 添加邮箱验证码到请求中
+    avatar: "",
+    bio: "" // 根据需要设置
+  }) as TransDef;
 
-    if (result.code === successCode) {
-      ElMessage.success((result.msg || "注册成功！") + " 正在为您自动登录");
-      router.push('/'); // 跳转到首页或其他目标页
-      const response = result?.data as unknown as registerResponse;
-      const userInfo = response?.userInfo ?? {};
-      userStore.setUser(userInfo as UserProfile); // 确保类型正确
-      const token = response?.token ?? '';
-      userToken.setToken(token);
-      userStore.setLogin(true);
-    } else {
-      ElMessage.error(result.msg || "注册失败，请稍后再试");
-    }
-  } catch (error) {
-    console.log('网络异常，注册失败', error);
-    ElMessage.error("网络异常，注册失败");
+  if (result.code === successCode) {
+    ElMessage.success((result.msg || "注册成功！") + " 正在为您自动登录");
+    await router.push('/'); // 跳转到首页或其他目标页
+    const response = result?.data as unknown as registerResponse;
+    const userInfo = response?.userInfo ?? {};
+    userStore.setUser(userInfo as UserProfile); // 确保类型正确
+    const token = response?.token ?? '';
+    userToken.setToken(token);
+    userStore.setLogin(true);
+  } else {
+    ElMessage.error(result.msg || "注册失败，请稍后再试");
   }
 }
 
@@ -264,7 +202,7 @@ const emit = defineEmits(['switchToLogin'])
 const goLogin = () => {
   console.log('跳转到登录界面')
   // emit('switchToLogin',true) // 如果之前改成了路由跳转，这里也应该保持一致
-  router.push('/login'); // 假设登录页路由是 /login
+  globalLoginPageNo.value = 0
 }
 </script>
 
@@ -272,7 +210,6 @@ const goLogin = () => {
 <template>
   <div class="register-container">
     <el-card class="register-card">
-      <h2 class="register-title">用户注册</h2>
       <el-form
           ref="formRef"
           :model="formData"
@@ -285,7 +222,7 @@ const goLogin = () => {
               v-model="formData.username"
               @blur="validateFormItem('username')"
               placeholder="请输入3-15位用户名（字母、数字、下划线）"
-              prefix-icon="User" />
+              prefix-icon="User"/>
         </el-form-item>
 
         <el-form-item label="邮箱" prop="email">
@@ -338,15 +275,18 @@ const goLogin = () => {
               style="width: 60%"
           />
           <el-button
-              :disabled="isvalid"
+              :disabled="ifWaitingEmailCode"
               @click="sendEmailCode"
-              style="background-color: #42b983; color: white;"
+              :loading="ifWaitingEmailCode"
+              type="success"
           >
             {{ sendBtnText }}
           </el-button>
         </el-form-item>
 
-        <el-button type="primary" :disabled="ifRegister" @click="submitForm">立即注册</el-button>
+        <el-button :type="ifRegister?'info':'primary'" :disabled="ifRegister" @click="submitForm">
+          {{ ifRegister ? '完善表单后注册' : '立即注册' }}
+        </el-button>
         <el-button @click="goLogin">已有账号？去登录</el-button>
       </el-form>
     </el-card>
@@ -368,7 +308,7 @@ const goLogin = () => {
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 
-    ::v-deep .el-card__body {
+    :deep(.el-card__body) {
       padding: 24px 16px;
     }
   }
@@ -437,6 +377,7 @@ const goLogin = () => {
       height: 40px !important; // 固定验证码高度
     }
 
+    // 修复：将 .el-button 样式移到正确的嵌套层级
     .el-button {
       width: 100% !important; // 按钮全宽
       height: 46px;
@@ -462,7 +403,7 @@ const goLogin = () => {
   .register-container {
     padding: 12px;
 
-    .register-card ::v-deep .el-card__body {
+    .register-card :deep(.el-card__body) {
       padding: 20px 12px;
     }
 
@@ -525,4 +466,3 @@ const goLogin = () => {
   }
 }
 </style>
-

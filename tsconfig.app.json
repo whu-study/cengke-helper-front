@@ -16,5 +16,5 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"]
+  "include": ["env.d.ts", "src/**/*", "src/**/*.vue","auto-imports.d.ts"]
 }

@@ -8,6 +8,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AuthPage: typeof import('./src/components/login/AuthPage.vue')['default']
     CollectButton: typeof import('./src/components/CollectButton.vue')['default']
     CommentItem: typeof import('./src/components/comment/CommentItem.vue')['default']
     CommentList: typeof import('./src/components/comment/CommentList.vue')['default']
@@ -47,6 +48,8 @@ declare module 'vue' {
     IdentifyCode: typeof import('./src/components/login/IdentifyCode.vue')['default']
     LikeButton: typeof import('./src/components/LikeButton.vue')['default']
     LoginPage: typeof import('./src/components/login/LoginPage.vue')['default']
+    NTabPane: typeof import('naive-ui')['NTabPane']
+    NTabs: typeof import('naive-ui')['NTabs']
     PostItem: typeof import('./src/components/post/PostItem.vue')['default']
     PostList: typeof import('./src/components/post/PostList.vue')['default']
     RegisterPage: typeof import('./src/components/login/RegisterPage.vue')['default']
