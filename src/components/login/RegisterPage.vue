@@ -8,6 +8,7 @@ import {useRouter} from "vue-router";
 import {useUserStore, useUserToken} from "@/store/modules/userStore.ts";
 import type {UserProfile} from "@/types/user.ts";
 import {encryptPassword} from "@/utils/globalFunc.ts";
+import {globalLoginPageNo} from "@/store/custom/globalData.ts";
 
 const userStore = useUserStore()
 const userToken = useUserToken()
@@ -201,7 +202,7 @@ const emit = defineEmits(['switchToLogin'])
 const goLogin = () => {
   console.log('跳转到登录界面')
   // emit('switchToLogin',true) // 如果之前改成了路由跳转，这里也应该保持一致
-  router.push('/login'); // 假设登录页路由是 /login
+  globalLoginPageNo.value = 0
 }
 </script>
 
@@ -209,7 +210,6 @@ const goLogin = () => {
 <template>
   <div class="register-container">
     <el-card class="register-card">
-      <h2 class="register-title">用户注册</h2>
       <el-form
           ref="formRef"
           :model="formData"

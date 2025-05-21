@@ -8,6 +8,7 @@ import { ElMessage } from "element-plus"
 import { useUserStore, useUserToken } from "@/store/modules/userStore.ts"
 import type { UserProfile } from "@/types/user.ts"
 import {encryptPassword} from "@/utils/globalFunc.ts";
+import {globalLoginPageNo} from "@/store/custom/globalData.ts";
 
 
 const userStore = useUserStore()
@@ -96,7 +97,7 @@ const handleForgetPassword = () => {
 
 // 切换注册
 const switchToRegister = () => {
-  router.push('/register')
+  globalLoginPageNo.value = 1
 }
 
 onMounted(()=>{
@@ -107,10 +108,6 @@ onMounted(()=>{
 <template>
   <div class="login-container">
     <el-card class="login-card">
-      <template #header>
-        <h2 class="login-title">用户登录</h2>
-      </template>
-
       <el-form
           :model="loginForm"
           :rules="loginRules"

@@ -8,6 +8,7 @@ import { ElButton, ElCard, ElAvatar, ElDivider, ElMessage, ElIcon } from 'elemen
 import { ArrowRight, Edit, List } from '@element-plus/icons-vue'; // 引入 List 图标
 import { useUserToken } from '@/store/modules/userStore';
 import LoginPage from "@/components/login/LoginPage.vue";
+import AuthPage from "@/components/login/AuthPage.vue";
 const userStore = useUserStore();
 const router = useRouter();
 const drawer = ref(false);
@@ -152,7 +153,7 @@ onMounted(async () => {
             title="登陆注册"
             direction="btt"
         >
-          <LoginPage/>
+          <AuthPage/>
         </el-drawer>
         <p class="guest-prompt">您当前未登录，请登录后查看个人信息。</p>
         <div class="auth-buttons">
