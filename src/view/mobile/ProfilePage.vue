@@ -7,9 +7,10 @@ import { useUserStore } from '@/store/modules/userStore'; // 或者 @/store/modu
 import { ElButton, ElCard, ElAvatar, ElDivider, ElMessage, ElIcon } from 'element-plus';
 import { ArrowRight, Edit, List } from '@element-plus/icons-vue'; // 引入 List 图标
 import { useUserToken } from '@/store/modules/userStore';
+import LoginPage from "@/components/login/LoginPage.vue";
 const userStore = useUserStore();
 const router = useRouter();
-
+const drawer = ref(false);
 const isLoggedIn = computed(() => userStore.ifLogin); // 使用 isAuthenticated (来自旧 userStore.ts) 或 userStore.ifLogin
 const currentUser = computed(() => userStore.userInfo); // 使用 currentUser (来自旧 userStore.ts) 或 userStore.userInfo
 const userToken = useUserToken();
@@ -34,7 +35,7 @@ const formatDate = (dateString: Date | string | undefined | null) => {
 };
 
 const goToLogin = () => {
-  router.push( '/login'); // 假设登录页路由名为 'Login'
+  drawer.value = true;
 };
 
 
@@ -146,6 +147,13 @@ onMounted(async () => {
       </div>
 
       <div v-else class="guest-view">
+        <el-drawer size="100%"
+            v-model="drawer"
+            title="登陆注册"
+            direction="btt"
+        >
+          <LoginPage/>
+        </el-drawer>
         <p class="guest-prompt">您当前未登录，请登录后查看个人信息。</p>
         <div class="auth-buttons">
           <el-button type="primary" size="large" @click="goToLogin" class="auth-button">

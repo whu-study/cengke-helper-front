@@ -173,12 +173,12 @@ onMounted(()=>{
 <style scoped>
 /* 基础布局调整 */
 .login-container {
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-  background: #f5f7fa;
+  //height: 100vh;
+  //display: flex;
+  //justify-content: center;
+  //align-items: center;
+  //padding: 20px;
+  //background: #f5f7fa;
 }
 
 .login-card {
