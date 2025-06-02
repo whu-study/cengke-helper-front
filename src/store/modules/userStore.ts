@@ -75,7 +75,6 @@ export const useUserStore = defineStore(
         }
 
         function logout() {
-            const router = useRouter();
             isLoading.value = true;
             error.value = null;
             const logoutPromise = ifLogin.value ? apiLogout() : Promise.resolve({
@@ -109,30 +108,21 @@ export const useUserStore = defineStore(
         }
 
 
-        function updateUserProfile(profileData: Partial<UserProfile>): Promise<UserProfile | null> {
+        function updateUserProfile(profileData: Partial<UserProfile>){
             isLoading.value = true;
             error.value = null;
-            return new Promise((resolve, reject) => {
                 apiUpdateUserProfile(profileData)
                     .then((response: TransDef<UserProfile>) => {
                         if (response.code === 0 && response.data) {
                             setUser(response.data);
                             ElMessage.success('个人资料更新成功！');
-                            resolve(response.data);
-                        } else {
-                            throw new Error(response.msg || '更新个人资料失败');
+                            return
                         }
-                    })
-                    .catch((err: any) => {
-                        error.value = err.message || '更新个人资料时发生错误';
-                        ElMessage.error(error.value || '更新个人资料时发生错误');
-                        console.error('Update user profile error:', err);
-                        reject(err);
+                        showErrorMsg(response.msg || "更新用户信息失败")
                     })
                     .finally(() => {
                         isLoading.value = false;
                     });
-            });
         }
 
 
