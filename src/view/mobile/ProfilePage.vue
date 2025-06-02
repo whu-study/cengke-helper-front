@@ -14,12 +14,8 @@ const drawer = ref(false);
 const isLoggedIn = computed(() => userStore.ifLogin); // 使用 isAuthenticated (来自旧 userStore.ts) 或 userStore.ifLogin
 const currentUser = computed(() => userStore.userInfo); // 使用 currentUser (来自旧 userStore.ts) 或 userStore.userInfo
 const userToken = useUserToken();
-const getAvatarUrl = (avatarPath: string | undefined | null) => {
-  if (!avatarPath || !(avatarPath.startsWith('http://') || avatarPath.startsWith('https://'))) {
-    return 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png';
-  }
-  // 假设后端返回的是可直接访问的相对路径或完整URL；如果不是，需要拼接基础URL
-  return avatarPath
+const getAvatarUrl = (avatarPath: string) => {
+  return avatarPath.trim()
 };
 
 const formatDate = (dateString: Date | string | undefined | null) => {
@@ -48,9 +44,9 @@ const goToMyPosts = () => {
 };
 
 const handleLogout = () => {
-    userStore.logout(); // 假设 userStore 中有 logout 方法
-    ElMessage.success('已成功退出登录');
-    router.push('/');
+  userStore.logout(); // 假设 userStore 中有 logout 方法
+  ElMessage.success('已成功退出登录');
+  router.push('/');
 };
 
 onMounted(async () => {
@@ -76,7 +72,11 @@ onMounted(async () => {
 
       <div v-if="isLoggedIn && currentUser" class="user-profile-details">
         <div class="profile-header">
-          <el-avatar :size="100" :src="getAvatarUrl(currentUser.avatar)" class="user-avatar"/>
+          <el-avatar :size="100" :src="getAvatarUrl(currentUser.avatar)" class="user-avatar">
+            <img
+                src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
+            />
+          </el-avatar>
           <h2 class="username">{{ currentUser.username || '用户' }}</h2>
         </div>
 

@@ -125,6 +125,7 @@ const handleReviewSubmitted = () => {
   showReviewForm.value = false;
   ElMessage.success('感谢您的评价！');
   // coursesStore.fetchCourseReviews 应该在 submitCourseReview action 成功后被调用
+  coursesStore.fetchCourseReviews(currentCourseId.value!);
 };
 const handleReviewCancel = () => {
   showReviewForm.value = false;
@@ -241,7 +242,7 @@ const handlePostCreated = async (payload: CreatePostBody) => { // [修改点] �
                 type="warning"
                 round
                 size="large"
-                @click="router.push('/login')"
+                @click="router.push('/profile')"
                 class="action-button review-toggle-button"
                 :icon="ChatDotSquare"
               >
