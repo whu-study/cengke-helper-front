@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import {computed, onMounted} from 'vue';
+import {useRouter} from 'vue-router';
 // 确保你导入的是整合后的 user store (例如：@/store/modules/user.ts)
 // 如果你的 userStore.ts (旧) 和 user.ts (新) 还没有完全整合，请先完成整合
 import {useUserStore, useUserToken} from '@/store/modules/userStore'; // 或者 @/store/modules/user.ts，取决于你的文件名
-import { ElButton, ElCard, ElAvatar, ElDivider, ElMessage, ElIcon } from 'element-plus';
-import { Edit, List } from '@element-plus/icons-vue'; // 引入 List 图标
+import {ElButton, ElCard, ElAvatar, ElDivider, ElMessage, ElIcon} from 'element-plus';
+import {Edit, List} from '@element-plus/icons-vue'; // 引入 List 图标
 import AuthPage from "@/components/login/AuthPage.vue";
+
 const userStore = useUserStore();
 const router = useRouter();
 const drawer = ref(false);
@@ -41,7 +42,7 @@ const goToLogin = () => {
 const goToMyPosts = () => {
   if (currentUser.value?.id) {
     // 导航到新的“我的帖子”页面，通过路由参数或query传递用户ID
-    router.push({ name: 'MyPosts', params: { userId: currentUser.value.id.toString() } });
+    router.push({name: 'MyPosts', params: {userId: currentUser.value.id.toString()}});
     // 或者使用 query: router.push({ name: 'MyPostsList', query: { authorId: currentUser.value.id } });
     // 这取决于你如何定义 MyPosts 路由
   } else {
@@ -49,15 +50,10 @@ const goToMyPosts = () => {
   }
 };
 
-const handleLogout = async () => {
-  try {
-    await userStore.logout(); // 假设 userStore 中有 logout 方法
+const handleLogout = () => {
+     userStore.logout(); // 假设 userStore 中有 logout 方法
     ElMessage.success('已成功退出登录');
     router.push('/');
-  } catch (error) {
-    ElMessage.error('退出登录失败，请稍后再试');
-    console.error('Logout failed:', error);
-  }
 };
 
 onMounted(async () => {
@@ -66,12 +62,7 @@ onMounted(async () => {
   // 则需要确保这里能正确加载用户数据。
   // 检查 token 和用户信息是否存在
   if (userToken.token && !currentUser.value?.id) {
-    try {
-      await userStore.fetchUserProfile();
-    } catch (error) {
-      console.error('Failed to fetch user profile on mount:', error);
-      // ElMessage.error('无法获取最新的用户数据');
-    }
+    userStore.fetchUserProfile();
   }
 });
 
@@ -89,12 +80,12 @@ onMounted(async () => {
       <div v-if="isLoggedIn && currentUser" class="user-profile-details">
         <div class="profile-header">
           <el-avatar :size="100" :src="getAvatarUrl(currentUser.avatar)" class="user-avatar">
-            <img src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" alt="默认头像" />
+            <img src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" alt="默认头像"/>
           </el-avatar>
           <h2 class="username">{{ currentUser.username || '用户' }}</h2>
         </div>
 
-        <el-divider />
+        <el-divider/>
 
         <div class="profile-info">
           <div class="info-item">
@@ -115,29 +106,29 @@ onMounted(async () => {
           </div>
         </div>
 
-        <el-divider />
+        <el-divider/>
 
         <div class="profile-user-actions">
           <el-button
-            type="primary"
-            :icon="List"
-            @click="goToMyPosts"
-            class="action-button my-posts-button"
-            round
+              type="primary"
+              :icon="List"
+              @click="goToMyPosts"
+              class="action-button my-posts-button"
+              round
           >
             我的帖子
           </el-button>
           <el-button
-            plain
-            :icon="Edit"
-            @click="router.push({ name: 'EditProfile' })"  class="action-button"
-            round
+              plain
+              :icon="Edit"
+              @click="router.push({ name: 'EditProfile' })" class="action-button"
+              round
           >
             编辑资料
           </el-button>
         </div>
 
-        <el-divider />
+        <el-divider/>
 
         <div class="profile-actions">
           <el-button type="danger" plain @click="handleLogout" class="action-button">退出登录</el-button>
@@ -147,9 +138,9 @@ onMounted(async () => {
 
       <div v-else class="guest-view">
         <el-drawer size="100%"
-            v-model="drawer"
-            title="登陆注册"
-            direction="btt"
+                   v-model="drawer"
+                   title="登陆注册"
+                   direction="btt"
         >
           <AuthPage/>
         </el-drawer>
@@ -239,6 +230,7 @@ onMounted(async () => {
   color: #303133;
   word-break: break-word;
 }
+
 .bio-value {
   white-space: pre-wrap;
   line-height: 1.6;
@@ -259,6 +251,7 @@ onMounted(async () => {
   border-color: #67c23a;
   color: white; */
 }
+
 /* .my-posts-button:hover {
   background-color: #85ce61;
   border-color: #85ce61;
@@ -307,17 +300,20 @@ onMounted(async () => {
     flex-direction: row;
     justify-content: center;
   }
+
   .auth-button {
     width: auto;
     min-width: 120px;
   }
+
   .profile-user-actions {
     flex-direction: row; /* 在较大屏幕上水平排列 */
     justify-content: space-around;
   }
+
   .action-button {
-     width: auto; /* 允许按钮根据内容调整宽度 */
-     min-width: 150px;
+    width: auto; /* 允许按钮根据内容调整宽度 */
+    min-width: 150px;
   }
 }
 </style>
