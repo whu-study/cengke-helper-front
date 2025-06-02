@@ -160,15 +160,15 @@ const processedContent = computed(() => {
   return '';
 });
 
- async function loadPostDetail(postId: string | number) {
-   await postsStore.fetchPostById(postId).catch(err => {
-    
-    console.error("Error caught in component while fetching post detail:", err);
-    // ElMessage.error(postsStore.error || '加载帖子详情失败'); // postError 已在模板中处理
-  });
-  // console.log("post.value",post.value)
-};
+// 修改后的 loadPostDetail 函数，也会增加浏览量
+async function loadPostDetail(postId: string | number) {
+  // 在获取新的帖子详情前，清除之前的帖子详情，以避免短暂显示旧数据
+  // postsStore.clearCurrentPost(); // 这个操作现在放到了 watcher 中调用 loadPostDetail 之前
 
+  await postsStore.fetchPostById(postId)
+
+
+}
 const editPost = () => {
   if (!post.value) return;
   router.push({ name: 'EditPost', params: { id: post.value.id.toString() } });
@@ -195,19 +195,19 @@ const handleCommentActionComplete = () => {
     // commentsStore.addComment/deleteComment 之后会刷新评论列表，但不一定会更新帖子的 commentsCount
     
     // 方案1: 强制刷新帖子详情 (会获取最新的 commentsCount)
-    postsStore.fetchPostById(post.value.id).then(() => {
-        console.log('Post details refreshed after comment action, new comment count:', post.value?.commentsCount);
-    }).catch(err => {
-        console.error("Failed to refresh post details after comment action:", err);
-    });
+    // postsStore.fetchPostById(post.value.id).then(() => {
+    //     console.log('Post details refreshed after comment action, new comment count:', post.value?.commentsCount);
+    // }).catch(err => {
+    //     console.error("Failed to refresh post details after comment action:", err);
+    // });
 
     // 方案2: (不太推荐，因为 commentsCount 的权威来源是帖子本身，而不是前端累加)
     // 假设你知道是增加了一个评论 (这比较难判断是新增还是删除回复等)
-    // if (post.value && typeof post.value.commentsCount === 'number') {
-    //   post.value.commentsCount++;
-    // } else if (post.value) {
-    //   post.value.commentsCount = (post.value.commentsCount || 0) + 1; // 更安全一点
-    // }
+    if (post.value && typeof post.value.commentsCount === 'number') {
+      post.value.commentsCount++;
+    } else if (post.value) {
+      post.value.commentsCount = (post.value.commentsCount || 0) + 1; // 更安全一点
+    }
     // ElMessage 提示应该由 CommentList 或其内部逻辑处理，这里不再重复
   }
 };
@@ -292,16 +292,16 @@ const handleCountUpdate = (newCount: number, type: 'like' | 'collect') => {
 
 
 onMounted(() => {
-  const postIdFromRoute = route.params.id;
-  if (postIdFromRoute) {
+  // const postIdFromRoute = route.params.id;
+  // if (postIdFromRoute) {
 
 
-    loadPostDetail(postIdFromRoute as string);
-    // console.log("post.value",post.value)
-  } else {
-    ElMessage.error("无效的帖子链接。");
-    router.replace({ name: 'DiscussHome' });
-  }
+  //   loadPostDetail(postIdFromRoute as string);
+  //   // console.log("post.value",post.value)
+  // } else {
+  //   ElMessage.error("无效的帖子链接。");
+  //   router.replace({ name: 'DiscussHome' });
+  // }
 });
 
 watch(() => route.params.id, (newId, oldId) => {

@@ -84,7 +84,7 @@ export const usePostsStore = defineStore('posts', () => {
         isLoading.value = true;
         error.value = null;
         currentPost.value = null; // 请求开始前清空，避免旧数据闪烁
-    
+        console.log('fetchPostById', postId);
         // 返回 Promise 链
         return apiGetPostById(postId)
             .then((response: TransDef<Post>) => {
@@ -164,7 +164,7 @@ export const usePostsStore = defineStore('posts', () => {
             apiUpdatePost(postId, postData)
                 .then((response: TransDef<Post>) => {
                     if (response.code === 0 && response.data) {
-                        ElMessage.success('帖子更新成功！');
+                        // ElMessage.success('帖子更新成功！');
                         const updatedPostData = response.data;
                         if (currentPost.value && currentPost.value.id.toString() === postId.toString()) {
                             currentPost.value = { ...currentPost.value, ...updatedPostData };
