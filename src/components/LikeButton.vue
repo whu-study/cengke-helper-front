@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, toRefs } from 'vue';
+import { ref, watch } from 'vue';
 import type { PropType } from 'vue';
 import { Star, StarFilled } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
@@ -121,7 +121,6 @@ const handleToggleLikeWithStore = async () => {
         optimisticLikesCount.value = originalLikesCount;
       }
     } else if (props.itemType === 'post') {
-      let success = false;
       if(props.itemType === 'post') {
         const result = await postsStore.toggleLikePost(props.itemId);
 
@@ -130,8 +129,7 @@ const handleToggleLikeWithStore = async () => {
         // 但为了即时反馈API的真实结果，可以手动同步一下（尽管通常watch就够了）
         optimisticLikedState.value = result.isLiked;
         optimisticLikesCount.value = result.likesCount;
-        success = true;
-      } else { 
+      } else {
         // result 为 null 表示 store 内部可能因为某些原因（如未登录，已在 store 处理）没有执行 API
         // 或者 API 调用失败（已在 store 中 ElMessage 提示）
         // 回滚乐观更新

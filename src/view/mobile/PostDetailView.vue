@@ -111,9 +111,8 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import type { Post } from '@/types/discuss';
-import { ElMessage, ElMessageBox, ElNotification, ElDialog } from 'element-plus';
-import { ArrowRight, Edit, Delete, View as ViewIcon } from '@element-plus/icons-vue';
+import { ElMessage, ElDialog } from 'element-plus';
+import { Edit, Delete, View as ViewIcon } from '@element-plus/icons-vue';
 import CommentList from '@/components/comment/CommentList.vue'; // 假设路径正确
 import LikeButton from '@/components/LikeButton.vue';   // 假设路径正确
 
@@ -261,34 +260,19 @@ const executeDeletePost = () => {
       deleteDialogVisible.value = false;
     });
 };
-
-const handleCommentPosted = () => {
-  if (post.value) {
-    // 假设评论发布后，后端会更新帖子的 commentsCount
-    // 重新获取帖子详情是最可靠的方式，或者如果API返回了新的count，则手动更新
-    // postsStore.fetchPostById(post.value.id);
-    if (typeof post.value.commentsCount === 'number') {
-        post.value.commentsCount++;
-    } else {
-        post.value.commentsCount = 1;
-    }
-     ElMessage.success('评论已发布！');
-  }
-};
-
-// LikeButton 现在会通过事件更新父组件状态
-const handleLikeUpdate = (newLikeState: boolean, type: 'like' | 'collect') => {
-  if (post.value && type === 'like') {
-    post.value.isLikedByCurrentUser = newLikeState;
-  }
-  // 如果有收藏，类似处理
-};
-const handleCountUpdate = (newCount: number, type: 'like' | 'collect') => {
-   if (post.value && type === 'like') {
-    post.value.likesCount = newCount;
-  }
-  // 如果有收藏，类似处理
-};
+// // LikeButton 现在会通过事件更新父组件状态
+// const handleLikeUpdate = (newLikeState: boolean, type: 'like' | 'collect') => {
+//   if (post.value && type === 'like') {
+//     post.value.isLikedByCurrentUser = newLikeState;
+//   }
+//   // 如果有收藏，类似处理
+// };
+// const handleCountUpdate = (newCount: number, type: 'like' | 'collect') => {
+//    if (post.value && type === 'like') {
+//     post.value.likesCount = newCount;
+//   }
+//   // 如果有收藏，类似处理
+// };
 
 
 onMounted(() => {

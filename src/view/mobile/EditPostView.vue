@@ -61,7 +61,8 @@ const postFormComponentRef = ref<InstanceType<typeof PostForm> | null>(null);
 const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore(); // 用于权限检查
-const postsStore = usePostsStore(); // 可选
+usePostsStore();
+// 可选
 
 const fetchPostForEditing = async (postId: string | number) => {
   isLoading.value = true;

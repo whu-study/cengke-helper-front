@@ -8,7 +8,7 @@
            v-for="i in totalPage">
         <!--选择项区-->
         <el-segmented v-model="segmentIndex"
-                      :options="buildings.slice((i-1)*pageSize,Math.min((i-1)*pageSize+5),buildings.length)"
+                      :options="buildings.slice((i-1)*pageSize,Math.min((i-1)*pageSize+5,buildings.length))"
                       @change="onChange">
           <template #default="scope">
             <div class="segmented-item-wrapper">
@@ -75,7 +75,7 @@ const buildings: Ref<BuildingInfo[]> = computed(() => {
 const className = ref('no' + props.divisionIndex);
 
 const onChange = (idx: number) => {
-  const clientHeight = document.getElementsByClassName(className.value).item(idx).clientHeight;
+  const clientHeight = document.getElementsByClassName(className.value).item(idx)?.clientHeight;
   contentHeight.value = clientHeight + 'px'
 }
 

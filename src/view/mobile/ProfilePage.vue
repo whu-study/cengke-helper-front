@@ -4,7 +4,7 @@ import {useRouter} from 'vue-router';
 // 确保你导入的是整合后的 user store (例如：@/store/modules/user.ts)
 // 如果你的 userStore.ts (旧) 和 user.ts (新) 还没有完全整合，请先完成整合
 import {useUserStore, useUserToken} from '@/store/modules/userStore'; // 或者 @/store/modules/user.ts，取决于你的文件名
-import {ElButton, ElCard, ElAvatar, ElDivider, ElMessage, ElIcon} from 'element-plus';
+import {ElButton, ElCard, ElAvatar, ElDivider, ElMessage} from 'element-plus';
 import {Edit, List} from '@element-plus/icons-vue'; // 引入 List 图标
 import AuthPage from "@/components/login/AuthPage.vue";
 

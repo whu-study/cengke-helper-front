@@ -27,11 +27,11 @@ import { ElMessage, ElNotification, ElPageHeader, ElContainer, ElHeader, ElMain 
 import { apiCreatePost, type CreatePostBody } from '@/api/postService'; // 导入创建API和类型
 import { usePostsStore } from '@/store/modules/postsStore'; // 如果需要更新 store
 import { successCode } from '@/api/myAxios';
-import type { Post } from '@/types/discuss';
-import PostForm from '@/components/post/CreatePostForm.vue'; 
+import PostForm from '@/components/post/CreatePostForm.vue';
 import type { FormSubmitPayload } from '@/components/post/CreatePostForm.vue';
 const router = useRouter();
-const postsStore = usePostsStore(); // 可选，如果创建成功后要更新 store
+usePostsStore();
+// 可选，如果创建成功后要更新 store
 const isSubmitting = ref(false);
 const postFormComponentRef = ref<InstanceType<typeof PostForm> | null>(null);
 

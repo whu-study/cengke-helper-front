@@ -4,7 +4,6 @@ import {ref} from 'vue'
 import type {UserProfile} from "@/types/user.ts";
 import {apiLogout, apiUpdateUserProfile, apiFetchUserProfile} from "@/api/authService.ts";
 import {ElMessage} from 'element-plus';
-import {useRouter} from 'vue-router';
 import type {TransDef} from "@/api/type.ts";
 import {showErrorMsg} from "@/utils/globalFunc.ts";
 
@@ -67,7 +66,7 @@ export const useUserStore = defineStore(
             apiFetchUserProfile()
                 .then((response: TransDef<UserProfile>) => {
                     if (response.code === 0 && response.data) {
-                        userInfo.value = response.data
+                        setUser(response.data)
                         return
                     }
                     showErrorMsg(response.msg || "获取用户信息失败")

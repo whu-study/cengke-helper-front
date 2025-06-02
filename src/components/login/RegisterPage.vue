@@ -111,7 +111,7 @@ const formRules = reactive({
   captcha: [
     {required: true, message: '请输入图形验证码', trigger: 'blur'},
     {
-      validator: (rule: unknown, value: string, callback: Function) => {
+      validator: (_: unknown, value: string, callback: Function) => {
         value.toLowerCase() !== captchaCode.value.toLowerCase()
             ? callback(new Error('图形验证码错误'))
             : callback()
@@ -121,7 +121,7 @@ const formRules = reactive({
   password: [
     {required: true, message: '请输入密码', trigger: 'blur'},
     {
-      validator: (rule: unknown, value: string) => {
+      validator: (_: unknown, value: string) => {
         if (value.length < 6 || value.length > 18) return false;
         const hasNumber = /\d/.test(value);
         const hasLetter = /[a-zA-Z]/.test(value);
@@ -137,7 +137,7 @@ const formRules = reactive({
   confirmPassword: [
     {required: true, message: '请确认密码', trigger: 'blur'},
     {
-      validator: (rule: unknown, value: string) => value === formData.password,
+      validator: (_: unknown, value: string) => value === formData.password,
       message: '两次输入密码不一致',
       trigger: 'blur'
     }

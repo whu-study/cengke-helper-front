@@ -1,6 +1,6 @@
-import {Ref, ref} from "vue";
-import {TransDef} from "@/api/myAxois.ts";
-import {Items} from "@/types/Items";
+import {type Ref, ref} from "vue";
+import {type Items} from "@/types/Items";
+import type {TransDef} from "@/api/type.ts";
 
 
 export class ListModel<T> {

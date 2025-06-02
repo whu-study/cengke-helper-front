@@ -8,20 +8,18 @@ import { useUserStore } from '@/store/modules/userStore.ts';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
 import {  onMounted } from 'vue';
-import CourseFilter from '@/components/course/CourseFilter.vue'; // 引入筛选器组件
-import CourseCard from "@/view/helper/CourseCard.vue"; // 假设这是您的课程卡片组件
-import { ElRow, ElCol, ElDrawer } from 'element-plus';
-import type { CourseInfo } from '@/types/course';
+// 引入筛选器组件
+// 假设这是您的课程卡片组件
+import { ElDrawer } from 'element-plus';
 import HelperRoot from "@/view/helper/HelperRoot.vue";
 import CourseReviewForm from '@/components/course/CourseReviewForm.vue';
 import CourseReviewItem from '@/components/course/CourseReviewItem.vue'; // 导入课程评价项组件
 import PostItem from '@/components/post/PostItem.vue';
 import CreatePostForm from '@/components/post/CreatePostForm.vue';
 
-import { ElMessage, ElDialog, ElButton, ElIcon, ElDivider, ElSkeleton, ElAlert, ElEmpty, ElText } from 'element-plus';
+import { ElMessage, ElDialog, ElButton, ElDivider, ElSkeleton, ElAlert, ElEmpty, ElText } from 'element-plus';
 import { ChatDotSquare, Plus } from '@element-plus/icons-vue';
 import type { Post } from '@/types/discuss';
-import type { CourseDetail } from '@/types/course'; // 假设 CourseDetail 包含更详细的课程信息
 import type { CreatePostBody } from '@/api/postService';
 import type { FormSubmitPayload } from '@/components/post/CreatePostForm.vue';
 import CourseFilterRoot from "@/view/helper/CourseFilterRoot.vue"; // 假设这里导出

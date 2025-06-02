@@ -104,7 +104,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, toRefs } from 'vue';
+import { ref, computed, nextTick } from 'vue';
 import type { PropType } from 'vue';
 import type { Comment as CommentType } from '@/types/discuss'; // 重命名以避免冲突
 import { useUserStore } from '@/store/modules/userStore'; // 调整路径
@@ -112,7 +112,7 @@ import { useCommentsStore } from '@/store/modules/commentsStore'; // 调整路�
 import { ChatLineSquare, Delete } from '@element-plus/icons-vue';
 import { ElMessage, ElInput, ElDialog, ElButton, ElAvatar, ElText } from 'element-plus';
 import LikeButton from '@/components/LikeButton.vue'; // 假设 LikeButton.vue 已修改或能接收 postId
-import type { AddCommentPayload, ToggleLikeCommentResponseData } from '@/api/commentService';
+import type { AddCommentPayload } from '@/api/commentService';
 
 
 const props = defineProps({
@@ -157,8 +157,6 @@ const emit = defineEmits<{
 
 const userStore = useUserStore();
 const commentsStore = useCommentsStore();
-
-const { comment: commentRef } = toRefs(props); // 创建对 comment prop 的响应式引用
 
 const showReplyInput = ref(false);
 const replyContent = ref('');
