@@ -55,7 +55,7 @@
           </el-tag>
         </div>
 
-        // PostDetailView.vue - template section for LikeButton
+<!--        // PostDetailView.vue - template section for LikeButton-->
         <div class="interaction-section">
           <LikeButton
             v-if="post && userStore.userInfo.id" :item-id="post.id"
