@@ -112,14 +112,16 @@ const submitForm = async () => {
       // 如果 store setter 尚未更新，则更新本地 userInfo
       userStore.setUser(updatedUser);
       
-    } 
+    }
+
+    userStore.fetchUserProfile()
   } catch (error: any) {
     // 错误已由 userStore.updateUserProfile 中的 ElMessage 处理
     // ElMessage.error(error.message || '更新个人资料失败，请稍后再试');
     console.error('更新个人资料失败:', error);
   } finally {
     isLoading.value = false;
-    router.push({ name: 'profile' }); // 导航回个人资料页面
+    await router.push({name: 'profile'}); // 导航回个人资料页面
   }
 };
 
@@ -162,8 +164,7 @@ const goBack = () => {
               placeholder="请输入图片URL"/>
            <div v-if="formData.avatar" class="avatar-preview-container">
             <p class="avatar-preview-label">当前头像预览:</p>
-            <el-avatar shape="square" :size="100" :src="formData.avatar" >
-                 <img src="https://cube.elemecdn.com/e/fd/0fc7d20532fdaf769a25683617711png.png"/> </el-avatar>
+            <el-avatar shape="square" :size="100" :src="formData.avatar" />
           </div>
         </el-form-item>
 
