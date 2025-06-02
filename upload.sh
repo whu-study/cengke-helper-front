@@ -1,0 +1,1 @@
+scp -r ./dist/* root@115.190.15.87:/var/www/cengke-helper
