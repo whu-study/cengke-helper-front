@@ -51,7 +51,7 @@ const goToMyPosts = () => {
 };
 
 const handleLogout = () => {
-     userStore.logout(); // 假设 userStore 中有 logout 方法
+    userStore.logout(); // 假设 userStore 中有 logout 方法
     ElMessage.success('已成功退出登录');
     router.push('/');
 };
