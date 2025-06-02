@@ -1,7 +1,7 @@
 export const baseURL =
     // window.location.origin;
-'http://localhost:8033'
-// "http://43.159.47.78:8080"
+// 'http://localhost:8033'
+"http://43.159.47.78:8033"
 //     'https://cengkehelper.top';
 
 export const apiPrefix = '/api/v1'

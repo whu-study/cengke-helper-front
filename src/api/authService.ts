@@ -54,6 +54,7 @@ export const webSendEmailVerifyCode = (email: string):Promise<TransDef> => {
     //     data: {
     //         email
     //     }
+    console.log(email)
     return Promise.resolve({
         code: 0,
         data: null,

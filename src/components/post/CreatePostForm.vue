@@ -127,7 +127,7 @@ const formRules = reactive<FormRules>({
   ],
   tags: [
     {
-      validator: (rule, value: string[], callback) => {
+      validator: (_, value: string[], callback) => {
         if (value && value.some(tag => tag.length > 20)) {
           callback(new Error('单个标签长度不能超过20个字符'));
         } else {

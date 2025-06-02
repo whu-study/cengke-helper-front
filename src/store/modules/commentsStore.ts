@@ -14,7 +14,7 @@ import {
     type ToggleLikeCommentResponseData
 } from '@/api/commentService';
 import { useUserStore } from './userStore';
-import type { TransDef } from '@/api/myAxios';
+import type { TransDef } from '@/api/type.ts';
 
 export const useCommentsStore = defineStore('comments', () => {
     const commentsByPostId = ref<Record<string | number, Comment[]>>({});

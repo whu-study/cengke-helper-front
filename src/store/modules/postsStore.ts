@@ -1,4 +1,3 @@
-// src/store/modules/postsStore.ts
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { Post } from '@/types/discuss'; // 导入帖子类型
@@ -21,7 +20,7 @@ import {
     type ToggleCollectResponseData, // 确保导入此类型
 } from '@/api/postService'; // 假设 API 服务文件路径
 import { useUserStore } from './userStore'; // 用于获取当前用户ID (如果需要)
-import type { TransDef } from '@/api/myAxios'; // 导入 TransDef 类型
+import type { TransDef } from '@/api/type.ts'; // 导入 TransDef 类型
 
 export const usePostsStore = defineStore('posts', () => {
     // --- State ---

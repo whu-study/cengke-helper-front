@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, nextTick } from 'vue'
-import { View, Hide } from '@element-plus/icons-vue'
-import { apiLogin } from "@/api/authService.ts"
-import { successCode } from "@/api/myAxios.ts"
-import { useRouter } from "vue-router"
-import { ElMessage } from "element-plus"
-import { useUserStore, useUserToken } from "@/store/modules/userStore.ts"
-import type { UserProfile } from "@/types/user.ts"
-import {encryptPassword} from "@/utils/globalFunc.ts";
+import {ref, reactive, onMounted, nextTick} from 'vue'
+import {View, Hide} from '@element-plus/icons-vue'
+import {apiLogin} from "@/api/authService.ts"
+import {successCode} from "@/api/myAxios.ts"
+import {useRouter} from "vue-router"
+import {ElMessage} from "element-plus"
+import {useUserStore, useUserToken} from "@/store/modules/userStore.ts"
+import type {UserProfile} from "@/types/user.ts"
+import {encryptPassword, showErrorMsg} from "@/utils/globalFunc.ts";
 import {globalLoginPageNo} from "@/store/custom/globalData.ts";
 
 
@@ -30,8 +30,8 @@ const passwordVisible = ref(false)
 // 表单验证规则
 const loginRules = reactive({
   email: [
-    { required: true, message: '请输入邮箱地址', trigger: 'blur' },
-    { type: 'email', message: '请输入有效的邮箱地址', trigger: ['blur', 'change'] }
+    {required: true, message: '请输入邮箱地址', trigger: 'blur'},
+    {type: 'email', message: '请输入有效的邮箱地址', trigger: ['blur', 'change']}
   ],
   password: [
     {
@@ -57,13 +57,13 @@ interface LoginResponse {
 // 登录处理
 const handleLogin = async () => {
   // 验证表单
-  await loginFormRef.value?.validate((valid) => {
-    if (!valid) return false
-  })
+  const valid = await loginFormRef.value?.validate()
+  showErrorMsg('校验表单未通过')
+  if (!valid) return
   console.log('请求登录')
   // 使用加密后的密码
   const encryptedPassword = encryptPassword(loginForm.password)  // 新输入密码需要加密
-  console.log("encryptedPassword: ",encryptedPassword)
+  console.log("encryptedPassword: ", encryptedPassword)
 
   const result = await apiLogin({
     email: loginForm.email,
@@ -100,67 +100,67 @@ const switchToRegister = () => {
   globalLoginPageNo.value = 1
 }
 
-onMounted(()=>{
+onMounted(() => {
 })
 
 </script>
 
 <template>
-      <el-form
-          :model="loginForm"
-          :rules="loginRules"
-          ref="loginFormRef"
-          label-position="top"
+  <el-form
+      :model="loginForm"
+      :rules="loginRules"
+      ref="loginFormRef"
+      label-position="top"
+  >
+    <!-- 邮箱输入 -->
+    <el-form-item label="邮箱" prop="email">
+      <el-input
+          v-model="loginForm.email"
+          placeholder="请输入邮箱"
+          clearable
+          type="text"
+          class="mobile-input"
+      />
+    </el-form-item>
+
+    <!-- 密码输入 -->
+    <el-form-item label="密码" prop="password">
+      <el-input
+          v-model="loginForm.password"
+          :type="passwordVisible ? 'text' : 'password'"
+          placeholder="请输入密码"
+          class="mobile-input"
       >
-        <!-- 邮箱输入 -->
-        <el-form-item label="邮箱" prop="email">
-          <el-input
-              v-model="loginForm.email"
-              placeholder="请输入邮箱"
-              clearable
-              type="text"
-              class="mobile-input"
-          />
-        </el-form-item>
+        <template #suffix>
+          <el-icon class="password-eye" @click="passwordVisible = !passwordVisible">
+            <View v-if="passwordVisible"/>
+            <Hide v-else/>
+          </el-icon>
+        </template>
+      </el-input>
+    </el-form-item>
 
-        <!-- 密码输入 -->
-        <el-form-item label="密码" prop="password">
-          <el-input
-              v-model="loginForm.password"
-              :type="passwordVisible ? 'text' : 'password'"
-              placeholder="请输入密码"
-              class="mobile-input"
-          >
-            <template #suffix>
-              <el-icon class="password-eye" @click="passwordVisible = !passwordVisible">
-                <View v-if="passwordVisible" />
-                <Hide v-else />
-              </el-icon>
-            </template>
-          </el-input>
-        </el-form-item>
+    <!-- 记住密码和忘记密码 -->
+    <div class="mobile-actions">
+      <el-checkbox v-model="loginForm.rememberMe">记住密码</el-checkbox>
+      <el-link type="primary" class="forget-link" @click="handleForgetPassword">忘记密码？</el-link>
+    </div>
 
-        <!-- 记住密码和忘记密码 -->
-        <div class="mobile-actions">
-          <el-checkbox v-model="loginForm.rememberMe">记住密码</el-checkbox>
-          <el-link type="primary" class="forget-link" @click="handleForgetPassword">忘记密码？</el-link>
-        </div>
+    <!-- 登录按钮 -->
+    <el-button
+        type="primary"
+        class="login-btn"
+        @click="handleLogin"
+    >
+      立即登录
+    </el-button>
 
-        <!-- 登录按钮 -->
-        <el-button
-            type="primary"
-            class="login-btn"
-            @click="handleLogin"
-        >
-          立即登录
-        </el-button>
-
-        <!-- 注册引导 -->
-        <div class="register-guide">
-          没有账号？
-          <el-link type="primary" @click="switchToRegister">立即注册</el-link>
-        </div>
-      </el-form>
+    <!-- 注册引导 -->
+    <div class="register-guide">
+      没有账号？
+      <el-link type="primary" @click="switchToRegister">立即注册</el-link>
+    </div>
+  </el-form>
 </template>
 
 <style scoped>

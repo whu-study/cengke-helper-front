@@ -3,7 +3,7 @@ import {myRequest} from "@/api/myAxios.ts";
 import type { CourseReviewPayload, CourseDetail, CourseReviewInfo as CourseReview } from '@/types/course';
 import {apiPrefix} from "./globalConst.ts";
 
-export const getCourseList = (): Promise<TransDef<BuildingInfo[]>> => { // 假设 getCourseList 返回的是 BuildingInfo 数组的 TransDef
+export const getCourseList = (): Promise<TransDef<BuildingInfo[][]>> => { // 假设 getCourseList 返回的是 BuildingInfo 数组的 TransDef
     return myRequest({
         method: 'GET',
         url: apiPrefix + '/courses'

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { useUserStore } from '@/store/modules/userStore'; // 导入用户 store
-import type { UserProfile } from '@/types/user'; // 导入用户配置类型
-import { ElMessage, ElForm, ElFormItem, ElInput, ElButton, ElCard } from 'element-plus';
+import {ref, reactive, onMounted, computed} from 'vue';
+import {useRouter} from 'vue-router';
+import {useUserStore} from '@/store/modules/userStore'; // 导入用户 store
+import type {UserProfile} from '@/types/user'; // 导入用户配置类型
+import {ElMessage, ElForm, ElFormItem, ElInput, ElButton, ElCard, type FormItemRule} from 'element-plus';
 
 const userStore = useUserStore();
 const router = useRouter();
@@ -29,17 +29,12 @@ onMounted(async () => {
     // 或者用户直接导航到此页面，则可能会发生这种情况。
     try {
       isLoading.value = true;
-      const profile = await userStore.fetchUserProfile();
-      if (profile) {
-        populateForm(profile);
-      } else {
-        ElMessage.error('无法加载用户信息，请稍后重试或重新登录。');
-        router.push({ name: 'profile' }); // 如果无法加载用户数据，则重定向
-      }
+      await userStore.fetchUserProfile();
+      populateForm(userStore.userInfo);
     } catch (error) {
       ElMessage.error('加载用户信息失败。');
       console.error("在编辑页加载用户配置失败:", error);
-      router.push({ name: 'profile' });
+      await router.push({name: 'profile'});
     } finally {
       isLoading.value = false;
     }
@@ -54,18 +49,18 @@ const populateForm = (profile: UserProfile) => {
 };
 
 // 校验规则，与 RegisterPage 类似
-const formRules = reactive({
+const formRules = ref<Partial<Record<string, FormItemRule[]>>>({
 //   username: [
 //     { required: true, message: '请输入用户名', trigger: 'blur' },
 //     { min: 3, max: 15, message: '用户名长度应为3到15个字符', trigger: 'blur' }, // [cite: 54]
 //     { pattern: /^[a-zA-Z0-9_]+$/, message: '用户名只能包含字母、数字和下划线', trigger: 'blur' } // [cite: 54]
 //   ],
   email: [
-    { required: true, message: '请输入邮箱', trigger: 'blur' },
-    { type: 'email', message: '邮箱格式不正确', trigger: 'blur' }
+    {required: true, message: '请输入邮箱', trigger: 'blur'},
+    {type: 'email', message: '邮箱格式不正确', trigger: 'blur'}
   ],
   bio: [
-    { max: 200, message: '简介不能超过200个字符', trigger: 'blur' }
+    {max: 200, message: '简介不能超过200个字符', trigger: 'blur'}
   ]
 //   avatar: [
 //     { type: 'url', message: '请输入有效的图片URL', trigger: ['blur', 'change'] },
@@ -78,9 +73,9 @@ const isSubmitDisabled = computed(() => {
   if (!userStore.userInfo) return true;
   // 检查是否有任何表单数据与原始用户信息不同
   const changed = formData.username !== userStore.userInfo.username ||
-                  formData.email !== userStore.userInfo.email ||
-                  formData.bio !== (userStore.userInfo.bio || '') ||
-                  formData.avatar !== (userStore.userInfo.avatar || '');
+      formData.email !== userStore.userInfo.email ||
+      formData.bio !== (userStore.userInfo.bio || '') ||
+      formData.avatar !== (userStore.userInfo.avatar || '');
   return !changed; // 如果未更改则禁用
 });
 
@@ -105,15 +100,7 @@ const submitForm = async () => {
       avatar: formData.avatar,
     };
     // 注意：userStore.updateUserProfile 将在内部调用 apiUpdateUserProfile
-    const updatedUser = await userStore.updateUserProfile(updatedProfileData);
-    if (updatedUser) {
-      ElMessage.success('个人资料更新成功！');
-
-      // 如果 store setter 尚未更新，则更新本地 userInfo
-      userStore.setUser(updatedUser);
-      
-    }
-
+    await userStore.updateUserProfile(updatedProfileData);
     userStore.fetchUserProfile()
   } catch (error: any) {
     // 错误已由 userStore.updateUserProfile 中的 ElMessage 处理
@@ -133,7 +120,8 @@ const goBack = () => {
 
 <template>
   <div class="edit-profile-container">
-    <el-card class="edit-profile-card"> <template #header>
+    <el-card class="edit-profile-card">
+      <template #header>
         <div class="card-header">
           <span>编辑个人资料</span>
         </div>
@@ -162,9 +150,9 @@ const goBack = () => {
           <el-input
               v-model="formData.avatar"
               placeholder="请输入图片URL"/>
-           <div v-if="formData.avatar" class="avatar-preview-container">
+          <div v-if="formData.avatar" class="avatar-preview-container">
             <p class="avatar-preview-label">当前头像预览:</p>
-            <el-avatar shape="square" :size="100" :src="formData.avatar" />
+            <el-avatar shape="square" :size="100" :src="formData.avatar"/>
           </div>
         </el-form-item>
 
@@ -178,11 +166,11 @@ const goBack = () => {
 
         <el-form-item>
           <el-button
-            type="primary"
-            @click="submitForm"
-            :loading="isLoading"
-            :disabled="isSubmitDisabled"
-            style="width: 100%; margin-bottom: 10px;"
+              type="primary"
+              @click="submitForm"
+              :loading="isLoading"
+              :disabled="isSubmitDisabled"
+              style="width: 100%; margin-bottom: 10px;"
           >
             {{ isLoading ? '正在保存...' : (isSubmitDisabled ? '无更改' : '保存更改') }}
           </el-button>
@@ -244,18 +232,21 @@ const goBack = () => {
         box-shadow: 0 0 0 1px var(--el-color-primary) inset; // [cite: 84] Element Plus 变量
       }
     }
+
     :deep(.el-textarea__inner) {
-        padding: 8px 14px; // textarea 的特定内边距
+      padding: 8px 14px; // textarea 的特定内边距
     }
   }
-    .avatar-preview-container {
-      margin-top: 10px;
-      .avatar-preview-label {
-        font-size: 13px;
-        color: #909399; // [cite: 35]
-        margin-bottom: 5px;
-      }
-   }
+
+  .avatar-preview-container {
+    margin-top: 10px;
+
+    .avatar-preview-label {
+      font-size: 13px;
+      color: #909399; // [cite: 35]
+      margin-bottom: 5px;
+    }
+  }
 
 
   .el-button {
@@ -273,7 +264,8 @@ const goBack = () => {
   }
 }
 
-/* 与 RegisterPage 类似的响应式调整 */ // [cite: 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104]
+/* 与 RegisterPage 类似的响应式调整 */
+// [cite: 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104]
 @media (max-width: 375px) {
   .edit-profile-container {
     padding: 12px; // [cite: 93]
@@ -288,7 +280,7 @@ const goBack = () => {
     .el-form {
       .el-form-item {
         margin-bottom: 18px; // [cite: 97]
-         :deep(.el-input__inner), :deep(.el-textarea__inner) {
+        :deep(.el-input__inner), :deep(.el-textarea__inner) {
           font-size: 15px !important; // [cite: 98]
           // height 由 --el-input-height 控制
         }

@@ -1,7 +1,8 @@
 import axios, {type AxiosRequestConfig} from "axios";
-import {userTokenKey, baseURL} from "./globalConst";
+import {baseURL} from "./globalConst";
 import { useUserToken } from "@/store/modules/userStore";
 import {showErrorMsg} from "@/utils/globalFunc.ts";
+import type {TransDef} from "@/api/type.ts";
 
 
 const myAxios = axios.create({baseURL});
@@ -42,7 +43,7 @@ myAxios.interceptors.response.use(
             case 403: // 权限不够时执行此逻辑
             {
                 const msg = response?.data?.msg || "权限不足"
-                console.log("权限不足")
+                console.log(msg)
                 // TODO
 
                 break;

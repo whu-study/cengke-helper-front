@@ -62,7 +62,7 @@ useCourse.fetchCourseData()
 const activeName = ref('1')
 
 import { watch } from 'vue'
-watch(activeName, (value: string, oldValue: string) => {
+watch(activeName, (value: string) => {
   useCourse.setCurrentDivision(Number(value)-1)
 })
 
