@@ -5,7 +5,7 @@ import type {UserProfile} from "@/types/user.ts";
 import {apiLogout,apiUpdateUserProfile,apiFetchUserProfile} from "@/api/authService.ts";
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
-import type {TransDef} from "@/api/myAxios.ts";
+import type {TransDef} from "@/api/type.ts";
 export const useUserToken=defineStore('token',()=>{
         const token = ref<string>('')
         const persist = {

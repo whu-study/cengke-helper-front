@@ -2,12 +2,6 @@ import axios, {type AxiosRequestConfig} from "axios";
 import {userTokenKey, baseURL} from "./globalConst";
 import { useUserToken } from "@/store/modules/userStore";
 import {showErrorMsg} from "@/utils/globalFunc.ts";
-const userToken = useUserToken();
-export interface TransDef<T = any> {
-    code: number
-    data: T
-    msg: string
-}
 
 
 const myAxios = axios.create({baseURL});
@@ -15,6 +9,7 @@ const myAxios = axios.create({baseURL});
 // 请求拦截器
 myAxios.interceptors.request.use(config => {
     // TODO 这里吧本地的token添加到请求头中
+    const userToken = useUserToken();
     // const token = localStorage.getItem(userTokenKey);
     const token = userToken.token;
     console.log('Current token:', token);  // 调试输出

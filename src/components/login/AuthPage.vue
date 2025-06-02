@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import {globalLoginPageNo} from "@/store/custom/globalData.ts";
 import LoginPage from "@/components/login/LoginPage.vue";
 import RegisterPage from "@/components/login/RegisterPage.vue";
 </script>

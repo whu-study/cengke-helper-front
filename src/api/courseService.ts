@@ -1,4 +1,4 @@
-import {myRequest, type TransDef} from "@/api/myAxios.ts";
+import {myRequest} from "@/api/myAxios.ts";
 // 确保从 @/types/course 导入类型
 import type { CourseReviewPayload, CourseDetail, CourseReviewInfo as CourseReview } from '@/types/course';
 import {apiPrefix} from "./globalConst.ts";
@@ -41,3 +41,4 @@ export const submitCourseReview = (payload: CourseReviewPayload): Promise<TransD
 // BuildingInfo 类型也应该在这里被引用或导入，如果 getCourseList 返回的是它
 // (假设 BuildingInfo 也是在 @/types/course.ts 中定义的)
 import type { BuildingInfo } from '@/types/course';
+import type {TransDef} from "@/api/type.ts";
