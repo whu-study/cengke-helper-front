@@ -19,3 +19,5 @@ export const globalCurCourseInfo = ref<CourseInfo>({
 export const globalUserProfile = ref<UserProfile>({
     avatar: "", bio: "", createdAt: new Date(), email: "", id: 0, role: 0, username: ""
 })
+
+export const globalLoginPageNo = ref(0)

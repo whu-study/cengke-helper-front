@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, withDefaults } from 'vue'
+import { ref, onMounted, withDefaults } from 'vue'
 
 const props = withDefaults(defineProps<{
   identifyCode?: string

@@ -1,12 +1,7 @@
 import axios, {type AxiosRequestConfig} from "axios";
 import {userTokenKey, baseURL} from "./globalConst";
 import { useUserToken } from "@/store/modules/userStore";
-const userToken = useUserToken();
-export interface TransDef<T = any> {
-    code: number
-    data: T
-    msg: string
-}
+import {showErrorMsg} from "@/utils/globalFunc.ts";
 
 
 const myAxios = axios.create({baseURL});
@@ -14,6 +9,7 @@ const myAxios = axios.create({baseURL});
 // 请求拦截器
 myAxios.interceptors.request.use(config => {
     // TODO 这里吧本地的token添加到请求头中
+    const userToken = useUserToken();
     // const token = localStorage.getItem(userTokenKey);
     const token = userToken.token;
     console.log('Current token:', token);  // 调试输出
@@ -36,8 +32,9 @@ myAxios.interceptors.response.use(
             case 401: // 鉴权失败时执行此逻辑
             {
                 const msg = response?.data?.msg || "鉴权失败"
-                console.log("鉴权失败")
+                console.log("鉴权失败:"+msg)
                 // TODO: 鉴权失败时执行此逻辑
+                showErrorMsg(msg)
                 // 退出登陆状态
                 // useUserStore().logout()
                 break;
@@ -52,6 +49,7 @@ myAxios.interceptors.response.use(
             }
             case 400: {
                 const msg = response?.data?.msg || "请求有误"
+                showErrorMsg(msg)
                 if (response?.data?.code === 10001) {
                     // 退出登陆状态
                     // useUserStore().logout()
@@ -78,6 +76,7 @@ myAxios.interceptors.response.use(
                 console.log(response)
                 const msg = response?.data?.msg || "网络错误，后端未部署或您未接入互联网"
                 // TODO
+                showErrorMsg(msg)
 
                 break
             }

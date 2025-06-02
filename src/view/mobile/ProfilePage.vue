@@ -3,13 +3,13 @@ import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 // 确保你导入的是整合后的 user store (例如：@/store/modules/user.ts)
 // 如果你的 userStore.ts (旧) 和 user.ts (新) 还没有完全整合，请先完成整合
-import { useUserStore } from '@/store/modules/userStore'; // 或者 @/store/modules/user.ts，取决于你的文件名
+import {useUserStore, useUserToken} from '@/store/modules/userStore'; // 或者 @/store/modules/user.ts，取决于你的文件名
 import { ElButton, ElCard, ElAvatar, ElDivider, ElMessage, ElIcon } from 'element-plus';
-import { ArrowRight, Edit, List } from '@element-plus/icons-vue'; // 引入 List 图标
-import { useUserToken } from '@/store/modules/userStore';
+import { Edit, List } from '@element-plus/icons-vue'; // 引入 List 图标
+import AuthPage from "@/components/login/AuthPage.vue";
 const userStore = useUserStore();
 const router = useRouter();
-
+const drawer = ref(false);
 const isLoggedIn = computed(() => userStore.ifLogin); // 使用 isAuthenticated (来自旧 userStore.ts) 或 userStore.ifLogin
 const currentUser = computed(() => userStore.userInfo); // 使用 currentUser (来自旧 userStore.ts) 或 userStore.userInfo
 const userToken = useUserToken();
@@ -34,7 +34,7 @@ const formatDate = (dateString: Date | string | undefined | null) => {
 };
 
 const goToLogin = () => {
-  router.push( '/login'); // 假设登录页路由名为 'Login'
+  drawer.value = true;
 };
 
 
@@ -146,6 +146,13 @@ onMounted(async () => {
       </div>
 
       <div v-else class="guest-view">
+        <el-drawer size="100%"
+            v-model="drawer"
+            title="登陆注册"
+            direction="btt"
+        >
+          <AuthPage/>
+        </el-drawer>
         <p class="guest-prompt">您当前未登录，请登录后查看个人信息。</p>
         <div class="auth-buttons">
           <el-button type="primary" size="large" @click="goToLogin" class="auth-button">

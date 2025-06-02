@@ -1,7 +1,8 @@
 // src/api/authService.ts
-import { myRequest, type TransDef } from './myAxios';
+import { myRequest } from './myAxios';
 import { apiPrefix } from './globalConst';
 import type { UserProfile } from '@/types/user';
+import type {TransDef} from "@/api/type.ts";
 
 // --- 登录请求体和响应数据类型 ---
 export interface LoginCredentials {
@@ -56,7 +57,7 @@ export const webSendEmailVerifyCode = (email: string):Promise<TransDef> => {
     return Promise.resolve({
         code: 0,
         data: null,
-        msg: "success"
+        msg: "验证码已发到您的邮箱"
 
     })as unknown as Promise<TransDef>
 
@@ -64,13 +65,13 @@ export const webSendEmailVerifyCode = (email: string):Promise<TransDef> => {
 /**
  * 用户注册
  * User registration.
- * @param userInfo - 用户注册信息 (User registration information)
+ * @param userRegInfo - 用户注册信息 (User registration information)
  */
-export const apiRegister = (userInfo: RegisterPayload): Promise<TransDef<RegisterResponseData>> => {
+export const apiRegister = (userRegInfo: RegisterPayload): Promise<TransDef<RegisterResponseData>> => {
     return myRequest<RegisterPayload, RegisterResponseData>({
         method: 'POST',
         url: `${apiPrefix}/auth/user-register`, // 示例端点 (Example endpoint)
-        data: userInfo,
+        data: userRegInfo,
     });
 };
 

@@ -91,20 +91,6 @@ export const routes: Array<RouteRecordRaw> = [
 
         ]
     },
-    // 以下是 mobile.txt 中已有的其他顶层路由，保持不变
-
-
-    {
-        path:'/login',
-        component: () => import('@/components/login/LoginPage.vue'),
-        meta: {hidden: true}
-    },
-    {
-        path:'/register',
-        component: () => import('@/components/login/RegisterPage.vue'),
-        meta: {hidden: true}
-    }
-
 ]
 
 export default routes;

@@ -1,7 +1,8 @@
 // src/api/postService.ts
-import { myRequest, type TransDef } from './myAxios'; // 假设 myAxios.ts 在同级目录 (Assuming myAxios.ts is in the same directory)
+import { myRequest } from './myAxios'; // 假设 myAxios.ts 在同级目录 (Assuming myAxios.ts is in the same directory)
 import { apiPrefix } from './globalConst';
-import type { Post } from '@/types/discuss'; // 导入帖子和作者类型 (Import Post and Author types)
+import type { Post } from '@/types/discuss';
+import type {TransDef} from "@/api/type.ts"; // 导入帖子和作者类型 (Import Post and Author types)
 // import type {UserProfile as AuthorInfo} from "@/types/user.ts";
 // --- 请求体和响应数据的特定类型定义 ---
 // (Request body and response data specific type definitions)
