@@ -2,7 +2,7 @@
 import {ref, reactive, computed} from 'vue'
 import Identify from '@/components/login/IdentifyCode.vue'
 import {webSendEmailVerifyCode, apiRegister} from '@/api/authService.ts'
-import type {TransDef} from "@/api/myAxios.ts";
+import type {TransDef} from "@/api/type.ts";
 import {successCode} from "@/api/myAxios.ts";
 import {useRouter} from "vue-router";
 import {useUserStore, useUserToken} from "@/store/modules/userStore.ts";
@@ -208,30 +208,26 @@ const goLogin = () => {
 
 
 <template>
-  <div class="register-container">
-    <el-card class="register-card">
+<!--  <div class="register-container">-->
+<!--    <el-card >-->
       <el-form
           ref="formRef"
           :model="formData"
           :rules="formRules"
-          label-width="120px"
           label-position="top"
       >
         <el-form-item label="用户名" prop="username">
           <el-input
               v-model="formData.username"
               @blur="validateFormItem('username')"
-              placeholder="请输入3-15位用户名（字母、数字、下划线）"
-              prefix-icon="User"/>
+              placeholder="请输入3-15位用户名（字母、数字、下划线）"/>
         </el-form-item>
 
         <el-form-item label="邮箱" prop="email">
           <el-input
               v-model="formData.email"
               @blur="validateFormItem('email')"
-              placeholder="请输入邮箱"
-              prefix-icon="Message"
-          />
+              placeholder="请输入邮箱"/>
         </el-form-item>
 
         <el-form-item label="密码" prop="password">
@@ -289,8 +285,8 @@ const goLogin = () => {
         </el-button>
         <el-button @click="goLogin">已有账号？去登录</el-button>
       </el-form>
-    </el-card>
-  </div>
+<!--    </el-card>-->
+<!--  </div>-->
 </template>
 
 <style scoped lang="scss">

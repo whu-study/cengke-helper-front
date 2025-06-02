@@ -106,8 +106,6 @@ onMounted(()=>{
 </script>
 
 <template>
-  <div class="login-container">
-    <el-card class="login-card">
       <el-form
           :model="loginForm"
           :rules="loginRules"
@@ -120,7 +118,7 @@ onMounted(()=>{
               v-model="loginForm.email"
               placeholder="请输入邮箱"
               clearable
-              type="email"
+              type="text"
               class="mobile-input"
           />
         </el-form-item>
@@ -163,37 +161,10 @@ onMounted(()=>{
           <el-link type="primary" @click="switchToRegister">立即注册</el-link>
         </div>
       </el-form>
-    </el-card>
-  </div>
 </template>
 
 <style scoped>
 /* 基础布局调整 */
-.login-container {
-  //height: 100vh;
-  //display: flex;
-  //justify-content: center;
-  //align-items: center;
-  //padding: 20px;
-  //background: #f5f7fa;
-}
-
-.login-card {
-  width: 100%;
-  max-width: 480px;
-  border: none;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  border-radius: 16px;
-  padding: 32px;
-}
-
-.login-title {
-  font-size: 28px;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 24px;
-  text-align: center;
-}
 
 /* 表单元素优化 */
 :deep(.el-form-item) {

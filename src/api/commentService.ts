@@ -1,7 +1,8 @@
 // src/api/commentService.ts
-import { myRequest, type TransDef } from './myAxios';
+import { myRequest } from './myAxios';
 import { apiPrefix } from './globalConst';
 import type { Comment } from '@/types/discuss';
+import type {TransDef} from "@/api/type.ts";
 
 // --- 请求体和响应数据类型 ---
 

@@ -1,7 +1,8 @@
 // src/api/authService.ts
-import { myRequest, type TransDef } from './myAxios';
+import { myRequest } from './myAxios';
 import { apiPrefix } from './globalConst';
 import type { UserProfile } from '@/types/user';
+import type {TransDef} from "@/api/type.ts";
 
 // --- 登录请求体和响应数据类型 ---
 export interface LoginCredentials {
