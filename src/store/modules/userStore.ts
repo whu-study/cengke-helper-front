@@ -1,27 +1,26 @@
 // stores/userStore.ts
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import {defineStore} from 'pinia'
+import {ref} from 'vue'
 import type {UserProfile} from "@/types/user.ts";
-import {apiLogout,apiUpdateUserProfile,apiFetchUserProfile} from "@/api/authService.ts";
-import { ElMessage } from 'element-plus';
-import { useRouter } from 'vue-router';
+import {apiLogout, apiUpdateUserProfile, apiFetchUserProfile} from "@/api/authService.ts";
+import {ElMessage} from 'element-plus';
+import {useRouter} from 'vue-router';
 import type {TransDef} from "@/api/type.ts";
-export const useUserToken=defineStore('token',()=>{
+
+export const useUserToken = defineStore(
+    'token',
+    () => {
         const token = ref<string>('')
-        const persist = {
-            key: 'userTokenKey',
-            storage: localStorage,
-            paths: ['token'] as const
-        }
-        const setToken=(newToken:string)=>{
+        const setToken = (newToken: string) => {
             token.value = newToken
         }
-        return{
+        return {
             token,
             setToken,
-            persist
         }
-
+    },
+    {
+        persist: true,
     }
 )
 export const useUserStore = defineStore('user', () => {
@@ -33,24 +32,24 @@ export const useUserStore = defineStore('user', () => {
         avatar: '',
         bio: '',
         role: 0,
-        createdAt:new Date('Invalid Date')
+        createdAt: new Date('Invalid Date')
     })
     const isLoading = ref(false);
     const error = ref<string | null>(null);
 
-    const ifLogin=ref<boolean>(false)
+    const ifLogin = ref<boolean>(false)
     // 持久化配置（需安装 pinia-plugin-persistedstate）
     const persist = {
         key: 'user-storage',
         storage: localStorage,
         paths: ['userInfo'] as const
     }
-    const setLogin=(status:boolean)=>{
-        ifLogin.value=status
+    const setLogin = (status: boolean) => {
+        ifLogin.value = status
     }
     // 类型化的用户操作方法
     const setUser = (newInfo: Partial<UserProfile>) => {
-        userInfo.value = { ...userInfo.value, ...newInfo }
+        userInfo.value = {...userInfo.value, ...newInfo}
     }
 
     const clearUser = () => {
@@ -61,7 +60,7 @@ export const useUserStore = defineStore('user', () => {
             avatar: '',
             bio: '',
             role: 0,
-            createdAt:new Date('Invalid Date')
+            createdAt: new Date('Invalid Date')
         }
     }
 
@@ -95,10 +94,13 @@ export const useUserStore = defineStore('user', () => {
         isLoading.value = true;
         error.value = null;
         return new Promise((resolve, reject) => {
-            const logoutPromise = ifLogin.value ? apiLogout() : Promise.resolve({ code: 0, msg: '用户未登录或Token已清除 (User not logged in or token already cleared)' } as TransDef<null>);
+            const logoutPromise = ifLogin.value ? apiLogout() : Promise.resolve({
+                code: 0,
+                msg: '用户未登录或Token已清除 (User not logged in or token already cleared)'
+            } as TransDef<null>);
 
             logoutPromise
-                .then((response : TransDef<null>) => {
+                .then((response: TransDef<null>) => {
                     if (response.code === 0) {
                         ElMessage.success(response.msg || '您已成功登出');
                     } else {
@@ -122,16 +124,15 @@ export const useUserStore = defineStore('user', () => {
                         avatar: '',
                         bio: '',
                         role: 0,
-                        createdAt:new Date('Invalid Date')
+                        createdAt: new Date('Invalid Date')
                     });
                     isLoading.value = false;
                     setLogin(false)
-                    router.push({ name: 'home' }); // 或登录页
+                    router.push({name: 'home'}); // 或登录页
                 });
         });
     }
 
-    
 
     function updateUserProfile(profileData: Partial<UserProfile>): Promise<UserProfile | null> {
         isLoading.value = true;
