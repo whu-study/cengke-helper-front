@@ -23,7 +23,8 @@ import { ChatDotSquare, Plus } from '@element-plus/icons-vue';
 import type { Post } from '@/types/discuss';
 import type { CourseDetail } from '@/types/course'; // 假设 CourseDetail 包含更详细的课程信息
 import type { CreatePostBody } from '@/api/postService';
-import type { FormSubmitPayload } from '@/components/post/CreatePostForm.vue'; // 假设这里导出
+import type { FormSubmitPayload } from '@/components/post/CreatePostForm.vue';
+import CourseFilterRoot from "@/view/helper/CourseFilterRoot.vue"; // 假设这里导出
 const coursesStore = useCourseStore();
 const postsStore = usePostsStore();
 const userStore = useUserStore();
@@ -51,8 +52,6 @@ const postsPageSize = ref(5); // 每页加载5个帖子
 const totalRelatedPosts = ref(0);
 const allPostsLoaded = ref(false);
 const prefillTagsForCreatePost = ref<string[]>([]);
-// 从 Store 获取筛选后的课程用于显示
-  const filteredCoursesToDisplay = computed(() => coursesStore.filteredCourses);
 
 onMounted(() => {
   // 初始加载所有课程数据（如果尚未加载）
@@ -61,15 +60,7 @@ onMounted(() => {
   }
 });
 
-const handleFilterChange = (filters: { faculty: string | null, courseId: number | null }) => {
-  coursesStore.applyCourseFilters(filters);
-};
 
-const openCourseDrawer = (course: CourseInfo) => {
-  coursesStore.setCurrentCourseInfo(course); // 这个方法应该会触发展示抽屉的逻辑
-  // isGlobalDrawOpen.value = true; // coursesStore.setCurrentCourseInfo 内部会处理详情和评价的加载
-                                // isGlobalDrawOpen 应该由点击 CourseCard 内部的逻辑控制，或者这里也设置
-};
 // --- 计算属性 ---
 const currentCourseName = computed(() => currentCourseInfo.value?.courseName || '');
 const currentCourseId = computed(() => currentCourseInfo.value?.id || null); // CourseInfo.id 是 number
@@ -392,28 +383,19 @@ const handlePostCreated = async (payload: CreatePostBody) => { // [修改点] �
   @cancel-edit="handleCreatePostCancel"
 />
   </el-dialog>
+  <n-h3 style="text-align: center">
+    蹭课小助手 Pro
+  </n-h3>
+  <n-divider />
+  <n-tabs type="segment" animated>
+      <n-tab-pane name="page1" tab="小助手首页">
+        <HelperRoot/>
 
-  <HelperRoot/>
-  <div>
-    <CourseFilter @filter-changed="handleFilterChange" />
-
-    <div v-if="coursesStore.isLoading" class="loading-indicator">加载中...</div>
-    <div v-else-if="coursesStore.error" class="error-message">错误: {{ coursesStore.error }}</div>
-    <div v-else-if="filteredCoursesToDisplay.length > 0" class="filtered-courses-list">
-      <el-row :gutter="16">
-        <el-col
-          v-for="course in filteredCoursesToDisplay"
-          :key="course.id"
-          :xs="24" :sm="12" :md="8" :lg="6"
-        >
-          <CourseCard :course-info="course" @click="openCourseDrawer(course)" />
-          </el-col>
-      </el-row>
-    </div>
-    <div v-else class="no-results">
-      <el-empty description="没有找到匹配的课程" />
-    </div>
-  </div>
+      </n-tab-pane>
+      <n-tab-pane name="page2" tab="课程筛选">
+        <CourseFilterRoot/>
+      </n-tab-pane>
+    </n-tabs>
 </template>
 
 <style scoped lang="scss">

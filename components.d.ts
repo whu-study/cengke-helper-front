@@ -46,6 +46,8 @@ declare module 'vue' {
     IdentifyCode: typeof import('./src/components/login/IdentifyCode.vue')['default']
     LikeButton: typeof import('./src/components/LikeButton.vue')['default']
     LoginPage: typeof import('./src/components/login/LoginPage.vue')['default']
+    NDivider: typeof import('naive-ui')['NDivider']
+    NH3: typeof import('naive-ui')['NH3']
     NTabPane: typeof import('naive-ui')['NTabPane']
     NTabs: typeof import('naive-ui')['NTabs']
     PostItem: typeof import('./src/components/post/PostItem.vue')['default']

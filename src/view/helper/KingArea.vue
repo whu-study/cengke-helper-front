@@ -13,7 +13,7 @@
           <template #default="scope">
             <div class="segmented-item-wrapper">
               <div class="segmented-icon">
-                {{ scope.item.building[0] === '0' ? scope.item.building.slice(0, 2) : scope.item.building[0]}}
+                {{ scope.item.building[0] === '0' ? scope.item.building.slice(0, 2) : scope.item.building[0] }}
               </div>
               <div class="segmented-text">{{ scope.item.building }}</div>
             </div>
@@ -52,9 +52,9 @@
 <script lang="ts" setup>
 import {computed, nextTick, onMounted, ref, watch} from 'vue'
 import CourseCard from "@/view/helper/CourseCard.vue";
-import { useCourseStore} from "@/store/modules/coursesStore";
-import { toRef } from 'vue';
-import type { BuildingInfo } from '@/types/course';
+import {useCourseStore} from "@/store/modules/coursesStore";
+import {toRef} from 'vue';
+import type {BuildingInfo} from '@/types/course';
 
 const props = defineProps<{
   divisionIndex: number;
@@ -62,7 +62,15 @@ const props = defineProps<{
 
 const courseStore = useCourseStore();
 
-const buildings = ref<BuildingInfo[]>([]);
+const buildings: Ref<BuildingInfo[]> = computed(() => {
+  const val = courseStore.getBuildingsByDivision(props.divisionIndex);
+  console.log(val)
+  let count = 0;
+  val.forEach((t) => {
+    t.value = count++;
+  })
+  return val
+})
 
 const className = ref('no' + props.divisionIndex);
 
@@ -73,14 +81,6 @@ const onChange = (idx: number) => {
 
 
 const scrollContent = ref()
-onMounted(() => {
-  buildings.value = courseStore.getBuildingsByDivision(props.divisionIndex);
-  console.log(buildings.value)
-  let count = 0;
-  buildings.value.forEach((t) => {
-    t.value = count++;
-  })
-})
 
 const pageSize = 5;
 
