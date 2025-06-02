@@ -127,9 +127,10 @@ const formRules = reactive({
         const hasLetter = /[a-zA-Z]/.test(value);
         const hasSpecial = /[!@#$%^&*=+_-]/.test(value);
         const typeCount = [hasNumber, hasLetter, hasSpecial].filter(Boolean).length;
-        return typeCount >= 2;
+        //  const typeCount = [hasNumber].filter(Boolean).length;
+        return typeCount >= 1;
       },
-      message: '密码长度6-18位，需包含数字、字母、特殊符号中至少两种',
+      message: '密码长度6-18位',
       trigger: 'blur'
     }
   ],

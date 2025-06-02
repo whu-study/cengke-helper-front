@@ -81,13 +81,13 @@ export const routes: Array<RouteRecordRaw> = [
           // title: '我的帖子'
         }
       },
-    //   // (可选) 新增：编辑个人资料页路由
-    //   {
-    //       path: 'profile/edit',
-    //       name: 'EditProfile',
-    //       component: () => import('@/view/mobile/EditProfilePage.vue'), // 你需要创建这个组件
-    //       meta: { requiresAuth: true }
-    //   },
+      // (可选) 新增：编辑个人资料页路由
+      {
+          path: 'profile/edit',
+          name: 'EditProfile',
+          component: () => import('@/view/mobile/EditProfile.vue'), // 你需要创建这个组件
+          meta: { requiresAuth: true }
+      },
 
         ]
     },
