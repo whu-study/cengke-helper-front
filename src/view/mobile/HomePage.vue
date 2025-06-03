@@ -299,7 +299,7 @@ const handlePostCreated = async (payload: CreatePostBody) => { // [修改点] �
                 type="warning"
                 round
                 :icon="Plus"
-                @click="router.push('/login')"
+                @click="router.push('/profile')"
                 class="action-button"
               >
                 登录后参与讨论
