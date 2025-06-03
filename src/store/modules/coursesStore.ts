@@ -93,7 +93,6 @@ export const useCourseStore = defineStore('course', () => {
         if (filters) {
             currentFacultyFilter.value = !filters.faculty ? null : filters.faculty;
             currentCourseIdFilter.value = !filters.courseId ? null : filters.courseId;
-
         }
         console.log(currentFacultyFilter.value);
         console.log(currentCourseIdFilter.value)

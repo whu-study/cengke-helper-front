@@ -9,9 +9,6 @@ const coursesStore = useCourseStore();
 
 // 从 Store 获取筛选后的课程用于显示
 const filteredCoursesToDisplay = computed(() => coursesStore.filteredCourses);
-const handleFilterChange = (filters: { faculty: string | null, courseId: number | null }) => {
-  coursesStore.applyCourseFilters(filters);
-};
 
 const openCourseDrawer = (course: CourseInfo) => {
   coursesStore.setCurrentCourseInfo(course); // 这个方法应该会触发展示抽屉的逻辑
@@ -22,7 +19,7 @@ const openCourseDrawer = (course: CourseInfo) => {
 
 <template>
   <div>
-    <CourseFilter @filter-changed="handleFilterChange" />
+    <CourseFilter />
 
     <div v-if="coursesStore.isLoading" class="loading-indicator">加载中...</div>
     <div v-else-if="coursesStore.error" class="error-message">错误: {{ coursesStore.error }}</div>
