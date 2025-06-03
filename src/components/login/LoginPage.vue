@@ -58,8 +58,10 @@ interface LoginResponse {
 const handleLogin = async () => {
   // 验证表单
   const valid = await loginFormRef.value?.validate()
-  showErrorMsg('校验表单未通过')
-  if (!valid) return
+  if (!valid) {
+    showErrorMsg('校验表单未通过')
+    return
+  }
   console.log('请求登录')
   // 使用加密后的密码
   const encryptedPassword = encryptPassword(loginForm.password)  // 新输入密码需要加密

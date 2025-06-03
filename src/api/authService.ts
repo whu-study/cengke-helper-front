@@ -77,6 +77,19 @@ export const apiRegister = (userRegInfo: RegisterPayload): Promise<TransDef<Regi
 };
 
 /**
+ * 用户登出
+ * User logout.
+ * (后端可能需要使 Token 失效)
+ * (Backend might need to invalidate the token)
+ */
+export const apiLogout = (): Promise<TransDef<null>> => {
+    return myRequest<never, null>({
+        method: 'POST',
+        url: `${apiPrefix}/auth/user-logout`, // 示例端点 (Example endpoint)
+    });
+};
+
+/**
  * 获取当前登录用户的个人资料
  * Fetches the profile of the currently logged-in user.
  * (Token 会在 myAxios 拦截器中自动添加)
@@ -86,19 +99,6 @@ export const apiFetchUserProfile = (): Promise<TransDef<UserProfile>> => {
     return myRequest<never, UserProfile>({
         method: 'GET',
         url: `${apiPrefix}/users/profile`, // 与你提供的 profile.txt 一致 (Consistent with your provided profile.txt)
-    });
-};
-
-/**
- * 用户登出
- * User logout.
- * (后端可能需要使 Token 失效)
- * (Backend might need to invalidate the token)
- */
-export const apiLogout = (): Promise<TransDef<null>> => {
-    return myRequest<never, null>({
-        method: 'POST',
-        url: `${apiPrefix}/auth/logout`, // 示例端点 (Example endpoint)
     });
 };
 
