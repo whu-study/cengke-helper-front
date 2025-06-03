@@ -89,10 +89,14 @@ export const useCourseStore = defineStore('course', () => {
 
     // --- Action: 应用筛选 ---
     function applyCourseFilters(filters?: { faculty?: string | null, courseId?: number | null }) {
+        console.log(filters)
         if (filters) {
-            currentFacultyFilter.value = filters.faculty === undefined ? currentFacultyFilter.value : filters.faculty;
-            currentCourseIdFilter.value = filters.courseId === undefined ? currentCourseIdFilter.value : filters.courseId;
+            currentFacultyFilter.value = !filters.faculty ? null : filters.faculty;
+            currentCourseIdFilter.value = !filters.courseId ? null : filters.courseId;
+
         }
+        console.log(currentFacultyFilter.value);
+        console.log(currentCourseIdFilter.value)
 
         let result = [...allCoursesFlatList.value];
 
