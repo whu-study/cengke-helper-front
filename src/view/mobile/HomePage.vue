@@ -359,11 +359,11 @@ const handlePostCreated = async (payload: CreatePostBody) => { // [修改点] �
       </div>
     </template>
 
-    <template #footer>
-      <div style="flex: auto; text-align: right; padding: 10px 20px;">
-        <el-button @click="isGlobalDrawOpen = false" round>关闭</el-button>
-      </div>
-    </template>
+<!--    <template #footer>-->
+<!--      <div style="flex: auto; text-align: right; padding: 10px 20px;">-->
+<!--        <el-button @click="isGlobalDrawOpen = false" round>关闭</el-button>-->
+<!--      </div>-->
+<!--    </template>-->
   </el-drawer>
 
   <el-dialog
