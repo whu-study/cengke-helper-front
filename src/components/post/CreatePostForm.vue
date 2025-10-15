@@ -1,5 +1,5 @@
 <template>
-  <div class="post-form-wrapper">
+  <div class="post-form-wrapper" :class="{ 'pc-mode': isPcMode }">
     <el-form
       ref="postFormRef"
       :model="postForm"
@@ -93,6 +93,10 @@ const props = defineProps({
   initialTags: { // 新增 prop
     type: Array as () => string[],
     default: () => [],
+  },
+  isPcMode: { // PC模式 prop
+    type: Boolean,
+    default: false,
   }
 });
 
@@ -276,9 +280,7 @@ defineExpose({
   border-radius: 4px;
 }
 
-.post-form-inner .el-input--large .el-input__inner {
-  /* height: 40px; */ /* Element Plus size="large" 会自动调整 */
-}
+
 
 .tags-input {
   width: 100%;
@@ -309,7 +311,16 @@ defineExpose({
   min-width: 100px;
 }
 
-.submit-button {
-  /* 可以添加特定样式 */
+/* PC模式样式 */
+.post-form-wrapper.pc-mode {
+  max-width: none;
+}
+
+.post-form-wrapper.pc-mode .post-form-inner {
+  max-width: 100%;
+}
+
+.post-form-wrapper.pc-mode .form-actions {
+  justify-content: flex-start;
 }
 </style>
