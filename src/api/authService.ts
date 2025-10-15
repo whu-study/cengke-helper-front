@@ -2,7 +2,7 @@
 import { myRequest } from './myAxios';
 import { apiPrefix } from './globalConst';
 import type { UserProfile } from '@/types/user';
-import type {TransDef} from "@/api/type.ts";
+import type { TransDef } from "@/api/type.ts";
 
 // --- 登录请求体和响应数据类型 ---
 export interface LoginCredentials {
@@ -21,7 +21,7 @@ export interface LoginResponseData {
 export interface RegisterPayload extends Omit<UserProfile, 'id' | 'createdAt' | 'role'> {
     password: string; // 注册时通常需要密码 (Password usually required for registration)
     emailCode: string;
-    username: string; 
+    username: string;
     avatar: string;
     bio: string;
     // confirmPassword?: string;
@@ -47,20 +47,14 @@ export const apiLogin = (credentials: LoginCredentials): Promise<TransDef<LoginR
         data: credentials,
     });
 };
-export const webSendEmailVerifyCode = (email: string):Promise<TransDef> => {
-    // return myRequest({
-    //     method: "POST",
-    //     url: apiPrefix+"/users/sendEmailVerifyCode",
-    //     data: {
-    //         email
-    //     }
-    console.log(email)
-    return Promise.resolve({
-        code: 0,
-        data: null,
-        msg: "验证码已发到您的邮箱"
-
-    })as unknown as Promise<TransDef>
+export const webSendEmailVerifyCode = (email: string): Promise<TransDef> => {
+    return myRequest({
+        method: "POST",
+        url: `${apiPrefix}/auth/send-email-code`,
+        data: {
+            email
+        }
+    });
 
 }
 /**
