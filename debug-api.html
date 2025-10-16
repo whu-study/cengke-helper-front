@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API调试页面</title>
+</head>
+
+<body>
+    <h1>课程API调试</h1>
+    <button onclick="fetchCourseData()">获取课程数据</button>
+    <pre id="output" style="background: #f5f5f5; padding: 20px; margin-top: 20px;"></pre>
+
+    <script>
+        async function fetchCourseData() {
+            const output = document.getElementById('output');
+
+            try {
+                // 假设API地址是这个
+                const response = await fetch('/api/v1/courses/structured');
+                const data = await response.json();
+
+                output.textContent = JSON.stringify(data, null, 2);
+
+                // 专门检查timeSlots字段
+                console.log('=== API调试信息 ===');
+                console.log('完整响应:', data);
+
+                if (data.data && data.data.length > 0) {
+                    const firstDivision = data.data[0];
+                    console.log('第一个学部:', firstDivision);
+
+                    if (firstDivision.buildings && firstDivision.buildings.length > 0) {
+                        const firstBuilding = firstDivision.buildings[0];
+                        console.log('第一个教学楼:', firstBuilding);
+
+                        if (firstBuilding.floors && firstBuilding.floors.length > 0) {
+                            const firstFloor = firstBuilding.floors[0];
+                            console.log('第一个楼层:', firstFloor);
+
+                            if (firstFloor.courses && firstFloor.courses.length > 0) {
+                                const firstCourse = firstFloor.courses[0];
+                                console.log('第一个课程完整数据:', firstCourse);
+                                console.log('timeSlots字段:', firstCourse.timeSlots);
+                                console.log('timeSlots类型:', typeof firstCourse.timeSlots);
+                                console.log('timeSlots是否为数组:', Array.isArray(firstCourse.timeSlots));
+
+                                // 检查所有课程的timeSlots字段
+                                firstFloor.courses.forEach((course, index) => {
+                                    console.log(`课程${index + 1} ${course.courseName}:`, course.timeSlots);
+                                });
+                            }
+                        }
+                    }
+                }
+
+            } catch (error) {
+                output.textContent = '请求失败: ' + error.message;
+                console.error('API请求失败:', error);
+            }
+        }
+
+        // 页面加载后自动获取数据
+        window.onload = fetchCourseData;
+    </script>
+</body>
+
+</html>

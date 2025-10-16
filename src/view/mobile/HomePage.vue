@@ -52,9 +52,12 @@ const allPostsLoaded = ref(false);
 const prefillTagsForCreatePost = ref<string[]>([]);
 
 onMounted(() => {
-  // 初始加载所有课程数据（如果尚未加载）
+  // 移动端主页统一负责加载课程数据
   if (coursesStore.allCoursesFlatList.length === 0 && !coursesStore.isLoading) {
+    console.log('Mobile HomePage: 主动加载课程数据');
     coursesStore.fetchCourseData();
+  } else {
+    console.log('Mobile HomePage: 课程数据已存在或正在加载');
   }
 });
 

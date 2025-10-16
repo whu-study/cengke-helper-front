@@ -5,6 +5,7 @@ import CourseFilter from "@/components/course/CourseFilter.vue";
 import CourseCard from "@/view/helper/CourseCard.vue";
 import {useCourseStore} from "@/store/modules/coursesStore.ts";
 import type {CourseInfo} from "@/types/course.ts";
+import emptyStateImage from '@/assets/desk3.png';
 const coursesStore = useCourseStore();
 
 // 从 Store 获取筛选后的课程用于显示
@@ -41,7 +42,7 @@ const openCourseDrawer = (course: CourseInfo) => {
       <el-empty 
         description="没有找到匹配的课程" 
         :image-size="80"
-        image="/src/assets/desk3.png"
+        :image="emptyStateImage"
       />
     </div>
   </div>

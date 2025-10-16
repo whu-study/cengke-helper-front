@@ -61,26 +61,82 @@ export const useCourseStore = defineStore('course', () => {
                 console.error(`Division ${divisionIndex} is not an array:`, buildingsInDivision);
             }
         });
-        // 去重（如果课程可能在多处出现且ID相同）
-        const uniqueCourses = new Map<number, CourseInfo>();
+        // 统计重复课程
+        const courseCountMap = new Map<string, number>();
         courses.forEach(course => {
-            if (!uniqueCourses.has(course.id)) {
-                uniqueCourses.set(course.id, course);
+            const courseKey = `${course.courseName}-${course.teacherName}-${course.faculty}`;
+            courseCountMap.set(courseKey, (courseCountMap.get(courseKey) || 0) + 1);
+        });
+
+        // 输出重复课程信息
+        console.log('Course duplication analysis:');
+        courseCountMap.forEach((count, key) => {
+            if (count > 1) {
+                console.log(`Duplicate course found: ${key} appears ${count} times`);
             }
         });
+
+        // 去重逻辑：基于课程ID + 课程名 + 教师名的组合去重
+        const uniqueCourses = new Map<string, CourseInfo>();
+        courses.forEach(course => {
+            // 创建唯一键：课程名 + 教师名 + 学院（移除ID，因为相同课程可能有不同ID）
+            const uniqueKey = `${course.courseName}-${course.teacherName}-${course.faculty}`;
+            if (!uniqueCourses.has(uniqueKey)) {
+                uniqueCourses.set(uniqueKey, course);
+            } else {
+                // 如果发现重复，合并教室信息和时间信息
+                const existingCourse = uniqueCourses.get(uniqueKey);
+                console.log(`Merging duplicate course: ${course.courseName} by ${course.teacherName}`);
+                if (existingCourse && existingCourse.room !== course.room) {
+                    // 合并多个教室信息
+                    existingCourse.room = `${existingCourse.room}, ${course.room}`;
+                }
+                if (existingCourse && existingCourse.courseTime !== course.courseTime) {
+                    // 合并多个时间信息
+                    existingCourse.courseTime = `${existingCourse.courseTime}; ${course.courseTime}`;
+                }
+            }
+        });
+
         allCoursesFlatList.value = Array.from(uniqueCourses.values());
+        console.log('All courses flat list after deduplication:', allCoursesFlatList.value);
+        console.log(`Total courses after deduplication: ${allCoursesFlatList.value.length}`);
+
         applyCourseFilters(); // 初始加载数据后也应用一次筛选（可能没有筛选条件，显示全部）
     }
 
     // 格式化时间段的辅助函数
     function formatTimeSlots(timeSlots: any[]): string {
-        if (!timeSlots || timeSlots.length === 0) return '';
+        console.log('formatTimeSlots 输入参数:', timeSlots);
+
+        if (!timeSlots) {
+            console.log('timeSlots 为 null 或 undefined');
+            return '';
+        }
+
+        if (!Array.isArray(timeSlots)) {
+            console.log('timeSlots 不是数组类型:', typeof timeSlots);
+            return '';
+        }
+
+        if (timeSlots.length === 0) {
+            console.log('timeSlots 是空数组');
+            return '';
+        }
 
         const dayNames = ['', '周一', '周二', '周三', '周四', '周五', '周六', '周日'];
 
-        return timeSlots.map(slot =>
-            `${dayNames[slot.dayOfWeek]} ${slot.startPeriod}-${slot.endPeriod}节`
-        ).join(' ');
+        const result = timeSlots.map(slot => {
+            console.log('处理时间段:', slot);
+            if (!slot || typeof slot.dayOfWeek === 'undefined' || typeof slot.startPeriod === 'undefined' || typeof slot.endPeriod === 'undefined') {
+                console.log('⚠️  时间段数据不完整:', slot);
+                return '时间待定';
+            }
+            return `${dayNames[slot.dayOfWeek]} ${slot.startPeriod}-${slot.endPeriod}节`;
+        }).join(' ');
+
+        console.log('formatTimeSlots 结果:', result);
+        return result;
     }
 
     // 改进的Mock数据生成器 - 包含正确的楼层信息
@@ -422,11 +478,23 @@ export const useCourseStore = defineStore('course', () => {
 
     // actions (普通函数)
     async function fetchCourseData() { // 将方法改为 async/await 以便更清晰地处理异步操作
+        // 防止重复请求
+        if (isLoading.value) {
+            console.log('fetchCourseData: 已有请求正在进行中，跳过重复请求');
+            return;
+        }
+
+        // 如果数据已存在，也跳过请求
+        if (allCoursesFlatList.value.length > 0) {
+            console.log('fetchCourseData: 数据已存在，跳过请求');
+            return;
+        }
+
         isLoading.value = true;
         error.value = null; // 重置错误状态
 
         // 使用真实API获取课程数据
-        console.log('使用真实API获取课程数据...');
+        console.log('fetchCourseData: 开始获取课程数据...');
 
         try {
             const res = await getCourseList(); // 使用 await 等待异步操作完成
@@ -443,6 +511,43 @@ export const useCourseStore = defineStore('course', () => {
 
             console.log('API返回的新格式数据:', res.data);
 
+            // 检查第一个课程的timeSlots数据格式（使用any类型绕过类型检查）
+            if (res.data.length > 0) {
+                const firstDivision = res.data[0] as any;
+                console.log('第一个学部数据:', firstDivision);
+
+                if (firstDivision.buildings && firstDivision.buildings.length > 0) {
+                    const firstBuilding = firstDivision.buildings[0] as any;
+                    console.log('第一个教学楼数据:', firstBuilding);
+
+                    if (firstBuilding.floors && firstBuilding.floors.length > 0) {
+                        const firstFloor = firstBuilding.floors[0] as any;
+                        console.log('第一个楼层数据:', firstFloor);
+
+                        if (firstFloor.courses && firstFloor.courses.length > 0) {
+                            const sampleCourse = firstFloor.courses[0] as any;
+                            console.log('样例课程数据:', sampleCourse);
+                            console.log('timeSlots字段类型:', typeof sampleCourse.timeSlots);
+                            console.log('timeSlots字段值:', sampleCourse.timeSlots);
+                            console.log('timeSlots是否为数组:', Array.isArray(sampleCourse.timeSlots));
+                            if (sampleCourse.timeSlots) {
+                                console.log('formatTimeSlots结果:', formatTimeSlots(sampleCourse.timeSlots));
+                            } else {
+                                console.log('⚠️  timeSlots字段不存在或为空');
+                            }
+                        } else {
+                            console.log('⚠️  楼层中没有课程数据');
+                        }
+                    } else {
+                        console.log('⚠️  教学楼中没有楼层数据');
+                    }
+                } else {
+                    console.log('⚠️  学部中没有教学楼数据');
+                }
+            } else {
+                console.log('⚠️  API返回的数据为空');
+            }
+
             // 将新的API格式转换为旧的数据结构以保持兼容性
             const convertedData: BuildingInfo[][] = res.data.map((division: any) => {
                 return division.buildings.map((building: any, index: number) => ({
@@ -451,16 +556,20 @@ export const useCourseStore = defineStore('course', () => {
                     value: index,
                     floors: building.floors, // 保留新的floors信息
                     infos: building.floors.flatMap((floor: any) =>
-                        floor.courses.map((course: any) => ({
-                            id: course.id,
-                            room: course.room,
-                            faculty: course.faculty,
-                            courseName: course.courseName,
-                            teacherName: course.teacherName,
-                            teacherTitle: course.teacherTitle,
-                            courseTime: formatTimeSlots(course.timeSlots),
-                            courseType: course.courseType
-                        }))
+                        floor.courses.map((course: any) => {
+                            const formattedTime = formatTimeSlots(course.timeSlots);
+                            console.log(`课程 ${course.courseName} - timeSlots:`, course.timeSlots, '-> courseTime:', formattedTime);
+                            return {
+                                id: course.id,
+                                room: course.room,
+                                faculty: course.faculty,
+                                courseName: course.courseName,
+                                teacherName: course.teacherName,
+                                teacherTitle: course.teacherTitle,
+                                courseTime: formattedTime,
+                                courseType: course.courseType
+                            };
+                        })
                     )
                 }));
             });

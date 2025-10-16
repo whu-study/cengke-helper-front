@@ -52,9 +52,15 @@ const retryLoad = () => {
 };
 
 onMounted(() => {
-  // 确保数据被获取
-  if (!useCourse.courseData || useCourse.courseData.every(division => division.length === 0)) {
+  // 不在这里主动请求数据，由父组件（HomePage）统一管理
+  // 只有在数据确实为空且没有正在加载时才请求
+  if (!useCourse.isLoading && 
+      useCourse.allCoursesFlatList.length === 0 && 
+      (!useCourse.courseData || useCourse.courseData.every(division => division.length === 0))) {
+    console.log('HelperCollapse: 数据为空且未在加载，发起请求');
     useCourse.fetchCourseData();
+  } else {
+    console.log('HelperCollapse: 数据已存在或正在加载，跳过请求');
   }
 });
 </script>

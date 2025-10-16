@@ -590,8 +590,12 @@ onMounted(() => {
   // 初始加载数据
   fetchRecentPosts();
   
+  // 主页统一负责加载课程数据
   if (coursesStore.allCoursesFlatList.length === 0 && !coursesStore.isLoading) {
+    console.log('PC HomePage: 主动加载课程数据');
     coursesStore.fetchCourseData();
+  } else {
+    console.log('PC HomePage: 课程数据已存在或正在加载');
   }
 });
 </script>

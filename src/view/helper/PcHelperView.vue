@@ -56,7 +56,7 @@
           <el-empty 
             description="请先选择学部和教学楼" 
             :image-size="120"
-            image="/src/assets/desk3.png"
+            :image="emptyStateImage"
           >
             <div class="empty-tips">
               <p>💡 点击左侧学部名称，然后选择教学楼</p>
@@ -91,7 +91,7 @@
               <el-empty 
                 description="请选择楼层查看课程" 
                 :image-size="80"
-                image="/src/assets/desk3.png"
+                :image="emptyStateImage"
               />
             </div>
             
@@ -108,7 +108,7 @@
                 <el-empty 
                   description="该楼层暂无课程安排" 
                   :image-size="60"
-                  image="/src/assets/desk3.png"
+                  :image="emptyStateImage"
                 />
               </div>
 
@@ -134,6 +134,13 @@ import CourseCard from './CourseCard.vue';
 import { useCourseStore } from '@/store/modules/coursesStore';
 import type { CourseInfo } from '@/types/course';
 
+// 导入图片资源
+import division1Icon from '@/assets/helper/1.svg';
+import division2Icon from '@/assets/helper/2.svg';
+import division3Icon from '@/assets/helper/3.svg';
+import division4Icon from '@/assets/helper/4.svg';
+import emptyStateImage from '@/assets/desk3.png';
+
 // 扩展的数据接口
 interface FloorInfo {
   floorName: string;
@@ -151,10 +158,10 @@ const courseStore = useCourseStore();
 
 // 学部选项
 const divisionOptions = [
-  { name: '文理学部', value: 0, icon: '/src/assets/helper/1.svg', description: '人文社科与理学' },
-  { name: '工学部', value: 1, icon: '/src/assets/helper/2.svg', description: '工程技术学科' },
-  { name: '信息学部', value: 2, icon: '/src/assets/helper/3.svg', description: '计算机与信息' },
-  { name: '医学部', value: 3, icon: '/src/assets/helper/4.svg', description: '医学健康学科' }
+  { name: '文理学部', value: 0, icon: division1Icon, description: '人文社科与理学' },
+  { name: '工学部', value: 1, icon: division2Icon, description: '工程技术学科' },
+  { name: '信息学部', value: 2, icon: division3Icon, description: '计算机与信息' },
+  { name: '医学部', value: 3, icon: division4Icon, description: '医学健康学科' }
 ];
 
 // 当前选择状态
@@ -231,9 +238,15 @@ const onFloorChange = (index: number) => {
 
 // 生命周期
 onMounted(() => {
-  // 确保数据加载
-  if (!courseStore.courseData || courseStore.courseData.every(division => division.length === 0)) {
+  // 不在这里主动请求数据，由上级组件统一管理
+  // 只有在数据确实为空且没有正在加载时才请求
+  if (!courseStore.isLoading && 
+      courseStore.allCoursesFlatList.length === 0 && 
+      (!courseStore.courseData || courseStore.courseData.every(division => division.length === 0))) {
+    console.log('PcHelperView: 数据为空且未在加载，发起请求');
     courseStore.fetchCourseData();
+  } else {
+    console.log('PcHelperView: 数据已存在或正在加载，跳过请求');
   }
 });
 </script>

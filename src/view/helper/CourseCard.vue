@@ -55,7 +55,7 @@ const onClick = () => {
       <div class="pc-card-header">
         <div class="room-info">
           <el-icon class="room-icon"><LocationFilled /></el-icon>
-          <span class="room-text">{{ courseInfoRef.room }}</span>
+          <span class="room-text multi-room">{{ courseInfoRef.room }}</span>
         </div>
         <div class="course-type-badge" :class="getTypeClass()">
           {{ courseInfoRef.courseType }}
@@ -77,7 +77,7 @@ const onClick = () => {
         </div>
         <div class="detail-item time-item">
           <el-icon class="detail-icon"><Clock /></el-icon>
-          <span>{{ courseInfoRef.courseTime }}</span>
+          <span class="multi-time">{{ courseInfoRef.courseTime }}</span>
         </div>
       </div>
     </div>
@@ -219,6 +219,17 @@ const onClick = () => {
             font-weight: 500;
           }
         }
+
+        .multi-room, .multi-time {
+          line-height: 1.4;
+          word-break: break-word;
+          
+          // 如果包含逗号或分号，表示合并的信息，使用特殊样式
+          &:has-text(","), &:has-text(";") {
+            font-size: 13px;
+            opacity: 0.9;
+          }
+        }
       }
     }
   }
@@ -242,6 +253,8 @@ const onClick = () => {
           font-weight: 600;
           color: #2c1810;
           text-align: left;
+          line-height: 1.3;
+          word-break: break-word;
         }
 
         .course-type {
@@ -297,6 +310,8 @@ const onClick = () => {
           text-align: right;
           color: #bc6c25;
           font-weight: 600;
+          line-height: 1.3;
+          word-break: break-word;
         }
       }
     }
