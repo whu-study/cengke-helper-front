@@ -1,97 +1,86 @@
 <template>
-
-  <!--  折叠面板部分-->
-  <div>
-    <el-collapse v-model="activeName" accordion>
-      <el-collapse-item name="1">
-        <template #title>
-          <img style="width: 5vw" src="/src/assets/helper/1.svg" alt="">
-          <span>文理学部</span>
+  <div class="helper-container">
+    <!-- 加载状态 -->
+    <div v-if="useCourse.isLoading" class="loading-state">
+      <el-skeleton :rows="4" animated />
+      <p style="text-align: center; color: #909399; margin-top: 16px;">正在加载课程数据...</p>
+    </div>
+    
+    <!-- 错误状态 -->
+    <div v-else-if="useCourse.error" class="error-state">
+      <el-alert
+        :title="`数据加载失败: ${useCourse.error}`"
+        type="error"
+        center
+        show-icon
+        :closable="false"
+      >
+        <template #default>
+          <el-button type="primary" @click="retryLoad">重新加载</el-button>
         </template>
-        <KingArea :division-index="0">
-
-        </KingArea>
-      </el-collapse-item>
-      <el-collapse-item name="2">
-        <template #title>
-          <img style="width: 5vw" src="/src/assets/helper/2.svg" alt="">
-          <span>工学部</span>
-        </template>
-
-        <KingArea :division-index="1">
-
-        </KingArea>
-      </el-collapse-item>
-      <el-collapse-item name="3">
-        <template #title>
-          <img style="width: 5vw" src="/src/assets/helper/3.svg" alt="">
-          <span>信息学部</span>
-        </template>
-
-        <KingArea :division-index="2">
-
-        </KingArea>
-
-
-      </el-collapse-item>
-      <el-collapse-item name="4">
-        <template #title>
-          <img style="width: 5vw" src="/src/assets/helper/4.svg" alt="">
-          <span>医学部</span>
-        </template>
-
-        <KingArea :division-index="3">
-
-        </KingArea>
-
-      </el-collapse-item>
-    </el-collapse>
+      </el-alert>
+    </div>
+    
+    <!-- 正常内容 -->
+    <div v-else class="helper-content">
+      <!-- PC端使用新的四级结构 -->
+      <PcHelperView v-if="!isMobile" />
+      
+      <!-- 移动端使用新的四级结构 -->
+      <MobileHelperView v-else />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed, onMounted } from "vue";
+import PcHelperView from "./PcHelperView.vue";
+import MobileHelperView from "./MobileHelperView.vue";
+import { useCourseStore } from "@/store/modules/coursesStore";
 
-import {ref} from "vue";
-import KingArea from "@/view/helper/KingArea.vue";
-import {useCourseStore} from "@/store/modules/coursesStore";
+// 获取设备类型
+const isMobile = computed(() => {
+  if (typeof window === 'undefined') return false;
+  return window.innerWidth <= 768;
+});
 
 const useCourse = useCourseStore();
-useCourse.fetchCourseData()
 
+// 重新加载数据
+const retryLoad = () => {
+  useCourse.fetchCourseData();
+};
 
-const activeName = ref('1')
-
-import { watch } from 'vue'
-watch(activeName, (value: string) => {
-  useCourse.setCurrentDivision(Number(value)-1)
-})
-
-
+onMounted(() => {
+  // 确保数据被获取
+  if (!useCourse.courseData || useCourse.courseData.every(division => division.length === 0)) {
+    useCourse.fetchCourseData();
+  }
+});
 </script>
 
 <style scoped lang="scss">
-.el-collapse-item span {
-  margin-left: 1vw;
-  font-size: 3.5vw;
+.helper-container {
+  width: 100%;
+  min-height: 400px;
 }
 
-.el-collapse-item img {
-  margin-left: 2vw;
-  vertical-align: middle;
+.loading-state {
+  padding: 40px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
-:deep(.el-collapse-item .el-collapse-item__header) {
-  background: #e8b57f;
-  //border: #bc6c25 2px solid;
-  margin-bottom: 1%;
-  height: 10vw;
+.error-state {
+  padding: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
 }
 
-:deep(.el-collapse-item .el-collapse-item__content) {
-  padding-bottom: 0;
-}
-
-:deep(.el-collapse-item__arrow) {
-  font-size: 4vw;
+.helper-content {
+  width: 100%;
 }
 </style>

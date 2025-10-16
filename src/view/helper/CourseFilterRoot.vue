@@ -1,5 +1,5 @@
 <script setup lang="ts">
-
+import { computed } from 'vue';
 import {ElCol, ElEmpty, ElRow} from "element-plus";
 import CourseFilter from "@/components/course/CourseFilter.vue";
 import CourseCard from "@/view/helper/CourseCard.vue";
@@ -33,7 +33,7 @@ const openCourseDrawer = (course: CourseInfo) => {
             :key="course.id"
             :xs="24" :sm="12" :md="8" :lg="6"
         >
-          <CourseCard :course-info="course" @click="openCourseDrawer(course)" />
+          <CourseCard :course-info="course" :is-mobile="false" @click="openCourseDrawer(course)" />
         </el-col>
       </el-row>
     </div>

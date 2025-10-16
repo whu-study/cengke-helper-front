@@ -1,56 +1,112 @@
 <template>
-  <div class="py-2">
-    <div class="relative w-full flex gap-0 snap-x snap-mandatory overflow-x-auto scroll-smooth"
-         ref="scrollContent"
-         @scroll="handleScroll">
-
-      <div class="snap-always snap-center shrink-0 first:pl-0 last:pr-0 w-[100%] mb-5"
-           v-for="i in totalPage">
-        <!--选择项区-->
-        <el-segmented v-model="segmentIndex"
-                      :options="buildings.slice((i-1)*pageSize,Math.min((i-1)*pageSize+5,buildings.length))"
-                      @change="onChange">
-          <template #default="scope">
-            <div class="segmented-item-wrapper">
-              <div class="segmented-icon">
-                {{ scope.item.building[0] === '0' ? scope.item.building.slice(0, 2) : scope.item.building[0] }}
-              </div>
-              <div class="segmented-text">{{ scope.item.building }}</div>
+  <div class="building-area" :class="{ 'pc-mode': !isMobile }">
+    <!-- PC端模式 -->
+    <div v-if="!isMobile" class="pc-building-selector">
+      <div class="building-tabs">
+        <div class="tabs-header">
+          <h3>选择教学楼</h3>
+          <span class="building-count">共{{ buildings.length }}个教学楼</span>
+        </div>
+        
+        <div class="tabs-container">
+          <div
+            v-for="(building, index) in buildings"
+            :key="index"
+            class="building-tab"
+            :class="{ active: segmentIndex === index }"
+            @click="selectBuilding(index)"
+          >
+            <div class="tab-icon">
+              {{ building.building[0] === '0' ? building.building.slice(0, 2) : building.building[0] }}
             </div>
-          </template>
-        </el-segmented>
+            <div class="tab-text">
+              <span class="building-name">{{ building.building }}</span>
+              <span class="course-count">{{ building.infos.length }}个课程</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
+      <!-- PC端课程展示 -->
+      <div class="pc-course-content">
+        <div v-if="selectedBuilding" class="course-section">
+          <div class="section-header">
+            <h4>{{ selectedBuilding.building }} - 课程列表</h4>
+            <span>共{{ selectedBuilding.infos.length }}个课程</span>
+          </div>
+          
+          <div class="course-grid">
+            <CourseCard 
+              v-for="courseInfo in selectedBuilding.infos" 
+              :key="courseInfo.id"
+              :course-info="courseInfo"
+              :is-mobile="false"
+            />
+          </div>
+        </div>
+        
+        <div v-else class="empty-state">
+          <el-icon class="empty-icon" size="48"><DocumentCopy /></el-icon>
+          <p>请选择教学楼查看课程</p>
+        </div>
       </div>
     </div>
 
-    <!--滑块区,进度条-->
-    <div class="flex flex-row place-content-center pb-4" v-if="totalPage!==1">
-      <div v-for="i in totalPage">
-        <div :class="{
-       'w-20 h-2 rounded ml-1 mr-1':true,
-       'bg-yellow-500':i-1===curScrollIndex,
-       'bg-yellow-300':i-1!==curScrollIndex
-     }" @click="onClickProcess(i-1)"></div>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="course-list" :style="{ transform: `translateX(${-segmentIndex * 100}%)` }">
-    <div v-for="(building,idx) in buildings" :key="idx">
-      <div :class="'w-[100vw] '+className">
-        <div v-for="courseInfo in building.infos">
-          <CourseCard :course-info="courseInfo"/>
+    <!-- 移动端模式：保持原有设计但优化样式 -->
+    <div v-else class="mobile-building-selector">
+      <div class="mobile-selector-container">
+        <!-- 教学楼选择器 -->
+        <div class="selector-wrapper" ref="scrollContent" @scroll="handleScroll">
+          <div class="selector-page" v-for="i in totalPage" :key="i">
+            <el-segmented 
+              v-model="segmentIndex"
+              :options="buildings.slice((i-1)*pageSize, Math.min((i-1)*pageSize+pageSize, buildings.length))"
+              @change="onChange"
+              class="mobile-segmented"
+            >
+              <template #default="scope">
+                <div class="mobile-segmented-item">
+                  <div class="item-icon">
+                    {{ scope.item.building[0] === '0' ? scope.item.building.slice(0, 2) : scope.item.building[0] }}
+                  </div>
+                  <div class="item-text">{{ scope.item.building }}</div>
+                </div>
+              </template>
+            </el-segmented>
+          </div>
         </div>
 
-        <div style="height: 3vw;"></div>
+        <!-- 分页指示器 -->
+        <div v-if="totalPage > 1" class="page-indicator">
+          <div 
+            v-for="i in totalPage" 
+            :key="i"
+            class="indicator-dot"
+            :class="{ active: (i-1) === curScrollIndex }"
+            @click="onClickProcess(i-1)"
+          ></div>
+        </div>
+      </div>
+
+      <!-- 移动端课程展示 -->
+      <div class="mobile-course-content" :style="{ height: contentHeight }">
+        <div class="course-container" :style="{ transform: `translateX(${-segmentIndex * 100}%)` }">
+          <div v-for="(building, idx) in buildings" :key="idx" :class="`building-courses ${className}`">
+            <div v-for="courseInfo in building.infos" :key="courseInfo.id">
+              <CourseCard 
+                :course-info="courseInfo"
+                :is-mobile="true"
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-
 </template>
 <script lang="ts" setup>
 import {computed, nextTick, onMounted, ref, watch} from 'vue'
+import { DocumentCopy } from '@element-plus/icons-vue'
 import CourseCard from "@/view/helper/CourseCard.vue";
 import {useCourseStore} from "@/store/modules/coursesStore";
 import {toRef} from 'vue';
@@ -58,13 +114,16 @@ import type {BuildingInfo} from '@/types/course';
 
 const props = defineProps<{
   divisionIndex: number;
+  isMobile?: boolean;
 }>();
 
 const courseStore = useCourseStore();
+const isMobile = computed(() => props.isMobile ?? true);
 
 const buildings: Ref<BuildingInfo[]> = computed(() => {
   const val = courseStore.getBuildingsByDivision(props.divisionIndex);
-  console.log(val)
+  console.log(`Division ${props.divisionIndex} buildings:`, val);
+  console.log('All course data:', courseStore.courseData);
   let count = 0;
   val.forEach((t) => {
     t.value = count++;
@@ -72,11 +131,29 @@ const buildings: Ref<BuildingInfo[]> = computed(() => {
   return val
 })
 
+// PC端选中的教学楼
+const selectedBuilding = computed(() => {
+  return buildings.value[segmentIndex.value] || null;
+});
+
+// PC端选择教学楼方法
+const selectBuilding = (index: number) => {
+  segmentIndex.value = index;
+  onChange(index);
+};
+
 const className = ref('no' + props.divisionIndex);
+const segmentIndex = ref(0);
+const contentHeight = ref('400px');
 
 const onChange = (idx: number) => {
-  const clientHeight = document.getElementsByClassName(className.value).item(idx)?.clientHeight;
-  contentHeight.value = clientHeight + 'px'
+  nextTick(() => {
+    const element = document.getElementsByClassName(className.value).item(idx);
+    if (element) {
+      const clientHeight = element.clientHeight;
+      contentHeight.value = clientHeight + 'px';
+    }
+  });
 }
 
 
@@ -105,13 +182,14 @@ const onClickProcess = (index: number) => {
   scrollContent.value.scrollLeft = scrollContent.value.scrollWidth * index / totalPage.value
 }
 
-const segmentIndex = ref(0)
-
-const contentHeight = ref('1')
-
 const currentDivisionRef = toRef(courseStore, 'currentDivision');
 
 onMounted(() => {
+  // 确保有数据
+  if (!courseStore.courseData || courseStore.courseData.every(division => division.length === 0)) {
+    courseStore.fetchCourseData();
+  }
+  
   nextTick(() => {
     const element = document.getElementsByClassName(className.value).item(segmentIndex.value);
     if (element) {
@@ -119,6 +197,7 @@ onMounted(() => {
       contentHeight.value = clientHeight + 'px';
     }
   });
+  
   watch(currentDivisionRef, () => {
     nextTick(() => {
       const element = document.getElementsByClassName(className.value).item(segmentIndex.value);
@@ -134,50 +213,273 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-
-.el-segmented {
-  //width: 100%;
-  --el-segmented-item-selected-bg-color: #dda15e;
-  //--el-segmented-item-selected-bg-color: rgba(255, 255, 255, 0);
+.building-area {
+  width: 100%;
 }
 
-// 穿透作用域修改子组件样式
-:deep(.el-segmented__item) {
-  padding-left: 0;
-  padding-right: 0;
-}
+/* PC端样式 */
+.pc-building-selector {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 24px;
+  min-height: 400px;
 
-.segmented-item-wrapper {
-  width: 20vw; // 20*5=100%
-  padding-top: 15%;
-  line-height: 6vw;
+  .building-tabs {
+    .tabs-header {
+      padding: 20px 0;
+      border-bottom: 1px solid #f0f0f0;
+      margin-bottom: 16px;
 
-  .segmented-icon {
-    font-size: 5vw;
-    align-content: center;
-    vertical-align: middle;
-    line-height: 5vw;
-    //height: 10vw;
-    //color: #bc6c25;
-    //border: #e8b57f 1px solid;
-    //background: #e8b57f;
-    //margin-left: 2vw;
-    //margin-right: 2vw;
-    margin-bottom: 1vw;
+      h3 {
+        font-size: 18px;
+        color: #303133;
+        margin: 0 0 8px 0;
+        font-weight: 600;
+      }
+
+      .building-count {
+        font-size: 14px;
+        color: #909399;
+      }
+    }
+
+    .tabs-container {
+      max-height: 500px;
+      overflow-y: auto;
+      
+      .building-tab {
+        display: flex;
+        align-items: center;
+        padding: 16px;
+        margin-bottom: 8px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        background: #f8f9fa;
+
+        &:hover {
+          background: #e9ecef;
+          transform: translateX(4px);
+        }
+
+        &.active {
+          background: linear-gradient(135deg, #faf0e6 0%, #f5e6d3 100%);
+          border-color: #dda15e;
+
+          .tab-icon {
+            background: #dda15e;
+            color: #fff;
+          }
+        }
+
+        .tab-icon {
+          width: 40px;
+          height: 40px;
+          border-radius: 8px;
+          background: #e9ecef;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 600;
+          font-size: 16px;
+          color: #606266;
+          margin-right: 12px;
+          transition: all 0.3s ease;
+        }
+
+        .tab-text {
+          display: flex;
+          flex-direction: column;
+
+          .building-name {
+            font-size: 15px;
+            color: #303133;
+            font-weight: 500;
+            margin-bottom: 2px;
+          }
+
+          .course-count {
+            font-size: 12px;
+            color: #909399;
+          }
+        }
+      }
+    }
   }
 
-  .segmented-text {
-    color: #bc6c25;
-    font-size: 3vw;
-  }
+  .pc-course-content {
+    .course-section {
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 0;
+        border-bottom: 1px solid #f0f0f0;
+        margin-bottom: 20px;
 
+        h4 {
+          font-size: 18px;
+          color: #303133;
+          margin: 0;
+          font-weight: 600;
+        }
+
+        span {
+          font-size: 14px;
+          color: #909399;
+        }
+      }
+
+      .course-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
+      }
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 300px;
+      color: #909399;
+
+      .empty-icon {
+        margin-bottom: 16px;
+        color: #c0c4cc;
+      }
+
+      p {
+        font-size: 16px;
+        margin: 0;
+      }
+    }
+  }
 }
 
+/* 移动端样式 */
+.mobile-building-selector {
+  .mobile-selector-container {
+    padding: 16px 0;
 
-.course-list {
-  display: flex;
-  //flex-direction: row;
-  transition: transform 0.5s ease; /* 添加过渡效果，并使用缓动函数 */
-  max-height: v-bind(contentHeight);
+    .selector-wrapper {
+      position: relative;
+      width: 100%;
+      display: flex;
+      gap: 0;
+      scroll-snap-type: x mandatory;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+
+      .selector-page {
+        scroll-snap-align: center;
+        flex-shrink: 0;
+        width: 100%;
+        margin-bottom: 20px;
+
+        .mobile-segmented {
+          width: 100%;
+          --el-segmented-item-selected-bg-color: #dda15e;
+
+          :deep(.el-segmented__item) {
+            padding: 0;
+          }
+
+          .mobile-segmented-item {
+            width: 20%;
+            padding: 12px 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            .item-icon {
+              font-size: 18px;
+              font-weight: 600;
+              color: #bc6c25;
+              margin-bottom: 6px;
+              width: 32px;
+              height: 32px;
+              border-radius: 6px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background: rgba(188, 108, 37, 0.1);
+            }
+
+            .item-text {
+              font-size: 12px;
+              color: #bc6c25;
+              text-align: center;
+              line-height: 1.2;
+            }
+          }
+        }
+      }
+    }
+
+    .page-indicator {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 16px;
+
+      .indicator-dot {
+        width: 24px;
+        height: 8px;
+        border-radius: 4px;
+        background: #f0f0f0;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &.active {
+          background: #dda15e;
+        }
+      }
+    }
+  }
+
+  .mobile-course-content {
+    overflow: hidden;
+
+    .course-container {
+      display: flex;
+      transition: transform 0.5s ease;
+
+      .building-courses {
+        width: 100vw;
+        flex-shrink: 0;
+        padding: 16px;
+
+        > div {
+          margin-bottom: 12px;
+
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+      }
+    }
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 1024px) {
+  .pc-building-selector {
+    grid-template-columns: 250px 1fr;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .pc-building-selector {
+    grid-template-columns: 1fr;
+    gap: 16px;
+
+    .building-tabs .tabs-container {
+      max-height: 200px;
+    }
+  }
 }
 </style>
