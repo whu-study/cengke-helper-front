@@ -14,7 +14,6 @@ import type {
     CourseDetail
 } from '@/types/course'; // 使用 CourseReviewInfo as CourseReview, 并导入 CourseDetail
 import { ref, computed } from 'vue';
-import { generateNewMockData, convertNewDataToOldFormat } from '@/utils/newMockData';
 
 export const useCourseStore = defineStore('course', () => {
     // state
@@ -39,10 +38,28 @@ export const useCourseStore = defineStore('course', () => {
     // 这个可以在 fetchCourseData 成功后填充
     function populateAllCoursesFlatList() {
         const courses: CourseInfo[] = [];
-        courseData.value.forEach((buildingsInDivision: BuildingInfo[]) => {
-            buildingsInDivision.forEach((building: BuildingInfo) => {
-                courses.push(...building.infos);
-            });
+        console.log('courseData.value structure:', courseData.value);
+
+        // 确保courseData.value是数组
+        if (!Array.isArray(courseData.value)) {
+            console.error('courseData.value is not an array:', courseData.value);
+            allCoursesFlatList.value = [];
+            filteredCourses.value = [];
+            return;
+        }
+
+        courseData.value.forEach((buildingsInDivision: BuildingInfo[], divisionIndex: number) => {
+            console.log(`Division ${divisionIndex}:`, buildingsInDivision);
+
+            if (Array.isArray(buildingsInDivision)) {
+                buildingsInDivision.forEach((building: BuildingInfo) => {
+                    if (building && building.infos && Array.isArray(building.infos)) {
+                        courses.push(...building.infos);
+                    }
+                });
+            } else {
+                console.error(`Division ${divisionIndex} is not an array:`, buildingsInDivision);
+            }
         });
         // 去重（如果课程可能在多处出现且ID相同）
         const uniqueCourses = new Map<number, CourseInfo>();
@@ -55,11 +72,352 @@ export const useCourseStore = defineStore('course', () => {
         applyCourseFilters(); // 初始加载数据后也应用一次筛选（可能没有筛选条件，显示全部）
     }
 
-    // 导入新的Mock数据生成器
-    function generateMockData() {
-        // 使用新的数据结构生成Mock数据并转换为旧格式
-        const newData = generateNewMockData();
-        return convertNewDataToOldFormat(newData);
+    // 格式化时间段的辅助函数
+    function formatTimeSlots(timeSlots: any[]): string {
+        if (!timeSlots || timeSlots.length === 0) return '';
+
+        const dayNames = ['', '周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+
+        return timeSlots.map(slot =>
+            `${dayNames[slot.dayOfWeek]} ${slot.startPeriod}-${slot.endPeriod}节`
+        ).join(' ');
+    }
+
+    // 改进的Mock数据生成器 - 包含正确的楼层信息
+    function generateMockData(): BuildingInfo[][] {
+        const mockBuildings: BuildingInfo[][] = [
+            // 文理学部 (0)
+            [
+                {
+                    building: '文理学部教学楼A',
+                    label: '文理学部教学楼A',
+                    value: 0,
+                    // 添加floors属性用于新的楼层导航
+                    floors: [
+                        {
+                            floorName: 'A楼1层',
+                            floorNumber: 1,
+                            rooms: ['A101', 'A102', 'A103', 'A104'],
+                            courses: [
+                                {
+                                    id: 1,
+                                    room: 'A101',
+                                    faculty: '数学与统计学院',
+                                    courseName: '高等数学A(1)',
+                                    teacherName: '张教授',
+                                    teacherTitle: '教授',
+                                    courseTime: '周一 1-2节',
+                                    courseType: '必修课'
+                                },
+                                {
+                                    id: 2,
+                                    room: 'A103',
+                                    faculty: '物理科学与技术学院',
+                                    courseName: '大学物理',
+                                    teacherName: '李教授',
+                                    teacherTitle: '副教授',
+                                    courseTime: '周二 3-4节',
+                                    courseType: '必修课'
+                                }
+                            ]
+                        },
+                        {
+                            floorName: 'A楼2层',
+                            floorNumber: 2,
+                            rooms: ['A201', 'A202', 'A203', 'A204'],
+                            courses: [
+                                {
+                                    id: 3,
+                                    room: 'A201',
+                                    faculty: '化学与分子科学学院',
+                                    courseName: '无机化学',
+                                    teacherName: '王教授',
+                                    teacherTitle: '教授',
+                                    courseTime: '周三 1-2节',
+                                    courseType: '专业课'
+                                },
+                                {
+                                    id: 16,
+                                    room: 'A202',
+                                    faculty: '数学与统计学院',
+                                    courseName: '线性代数',
+                                    teacherName: '陈教授',
+                                    teacherTitle: '副教授',
+                                    courseTime: '周四 3-4节',
+                                    courseType: '必修课'
+                                }
+                            ]
+                        },
+                        {
+                            floorName: 'A楼3层',
+                            floorNumber: 3,
+                            rooms: ['A301', 'A302', 'A303'],
+                            courses: [
+                                {
+                                    id: 17,
+                                    room: 'A301',
+                                    faculty: '物理科学与技术学院',
+                                    courseName: '理论力学',
+                                    teacherName: '刘教授',
+                                    teacherTitle: '教授',
+                                    courseTime: '周五 1-2节',
+                                    courseType: '专业课'
+                                }
+                            ]
+                        }
+                    ],
+                    // 保持兼容性的infos字段 - 扁平化所有课程
+                    infos: [
+                        {
+                            id: 1,
+                            room: 'A101',
+                            faculty: '数学与统计学院',
+                            courseName: '高等数学A(1)',
+                            teacherName: '张教授',
+                            teacherTitle: '教授',
+                            courseTime: '周一 1-2节',
+                            courseType: '必修课'
+                        },
+                        {
+                            id: 2,
+                            room: 'A103',
+                            faculty: '物理科学与技术学院',
+                            courseName: '大学物理',
+                            teacherName: '李教授',
+                            teacherTitle: '副教授',
+                            courseTime: '周二 3-4节',
+                            courseType: '必修课'
+                        },
+                        {
+                            id: 3,
+                            room: 'A201',
+                            faculty: '化学与分子科学学院',
+                            courseName: '无机化学',
+                            teacherName: '王教授',
+                            teacherTitle: '教授',
+                            courseTime: '周三 1-2节',
+                            courseType: '专业课'
+                        },
+                        {
+                            id: 16,
+                            room: 'A202',
+                            faculty: '数学与统计学院',
+                            courseName: '线性代数',
+                            teacherName: '陈教授',
+                            teacherTitle: '副教授',
+                            courseTime: '周四 3-4节',
+                            courseType: '必修课'
+                        },
+                        {
+                            id: 17,
+                            room: 'A301',
+                            faculty: '物理科学与技术学院',
+                            courseName: '理论力学',
+                            teacherName: '刘教授',
+                            teacherTitle: '教授',
+                            courseTime: '周五 1-2节',
+                            courseType: '专业课'
+                        }
+                    ]
+                },
+                {
+                    building: '文理学部教学楼B',
+                    label: '文理学部教学楼B',
+                    value: 1,
+                    floors: [
+                        {
+                            floorName: 'B楼1层',
+                            floorNumber: 1,
+                            rooms: ['B101', 'B102'],
+                            courses: [
+                                {
+                                    id: 4,
+                                    room: 'B101',
+                                    faculty: '文学院',
+                                    courseName: '中国古代文学',
+                                    teacherName: '赵教授',
+                                    teacherTitle: '教授',
+                                    courseTime: '周四 5-6节',
+                                    courseType: '专业课'
+                                },
+                                {
+                                    id: 5,
+                                    room: 'B102',
+                                    faculty: '外国语言文学学院',
+                                    courseName: '英语精读',
+                                    teacherName: '刘教授',
+                                    teacherTitle: '副教授',
+                                    courseTime: '周五 1-2节',
+                                    courseType: '通识课'
+                                }
+                            ]
+                        }
+                    ],
+                    infos: [
+                        {
+                            id: 4,
+                            room: 'B101',
+                            faculty: '文学院',
+                            courseName: '中国古代文学',
+                            teacherName: '赵教授',
+                            teacherTitle: '教授',
+                            courseTime: '周四 5-6节',
+                            courseType: '专业课'
+                        },
+                        {
+                            id: 5,
+                            room: 'B102',
+                            faculty: '外国语言文学学院',
+                            courseName: '英语精读',
+                            teacherName: '刘教授',
+                            teacherTitle: '副教授',
+                            courseTime: '周五 1-2节',
+                            courseType: '通识课'
+                        }
+                    ]
+                }
+            ],
+            // 工学部 (1)  
+            [
+                {
+                    building: '工学部主楼',
+                    label: '工学部主楼',
+                    value: 0,
+                    floors: [
+                        {
+                            floorName: 'C楼3层',
+                            floorNumber: 3,
+                            rooms: ['C301', 'C302'],
+                            courses: [
+                                {
+                                    id: 6,
+                                    room: 'C301',
+                                    faculty: '土木建筑工程学院',
+                                    courseName: '结构力学',
+                                    teacherName: '陈教授',
+                                    teacherTitle: '教授',
+                                    courseTime: '周一 3-4节',
+                                    courseType: '专业课'
+                                },
+                                {
+                                    id: 7,
+                                    room: 'C302',
+                                    faculty: '机械与动力工程学院',
+                                    courseName: '机械设计',
+                                    teacherName: '孙教授',
+                                    teacherTitle: '副教授',
+                                    courseTime: '周二 5-6节',
+                                    courseType: '专业课'
+                                }
+                            ]
+                        }
+                    ],
+                    infos: [
+                        {
+                            id: 6,
+                            room: 'C301',
+                            faculty: '土木建筑工程学院',
+                            courseName: '结构力学',
+                            teacherName: '陈教授',
+                            teacherTitle: '教授',
+                            courseTime: '周一 3-4节',
+                            courseType: '专业课'
+                        },
+                        {
+                            id: 7,
+                            room: 'C302',
+                            faculty: '机械与动力工程学院',
+                            courseName: '机械设计',
+                            teacherName: '孙教授',
+                            teacherTitle: '副教授',
+                            courseTime: '周二 5-6节',
+                            courseType: '专业课'
+                        }
+                    ]
+                }
+            ],
+            // 信息学部 (2)
+            [
+                {
+                    building: '信息学部计算机楼',
+                    label: '信息学部计算机楼',
+                    value: 0,
+                    floors: [
+                        {
+                            floorName: 'E楼5层',
+                            floorNumber: 5,
+                            rooms: ['E501', 'E502', 'E503'],
+                            courses: [
+                                {
+                                    id: 9,
+                                    room: 'E501',
+                                    faculty: '计算机学院',
+                                    courseName: '数据结构与算法',
+                                    teacherName: '吴教授',
+                                    teacherTitle: '教授',
+                                    courseTime: '周一 5-6节',
+                                    courseType: '专业课'
+                                }
+                            ]
+                        }
+                    ],
+                    infos: [
+                        {
+                            id: 9,
+                            room: 'E501',
+                            faculty: '计算机学院',
+                            courseName: '数据结构与算法',
+                            teacherName: '吴教授',
+                            teacherTitle: '教授',
+                            courseTime: '周一 5-6节',
+                            courseType: '专业课'
+                        }
+                    ]
+                }
+            ],
+            // 医学部 (3)
+            [
+                {
+                    building: '医学部教学楼',
+                    label: '医学部教学楼',
+                    value: 0,
+                    floors: [
+                        {
+                            floorName: 'G楼7层',
+                            floorNumber: 7,
+                            rooms: ['G701'],
+                            courses: [
+                                {
+                                    id: 13,
+                                    room: 'G701',
+                                    faculty: '基础医学院',
+                                    courseName: '人体解剖学',
+                                    teacherName: '朱教授',
+                                    teacherTitle: '教授',
+                                    courseTime: '周一 7-8节',
+                                    courseType: '专业课'
+                                }
+                            ]
+                        }
+                    ],
+                    infos: [
+                        {
+                            id: 13,
+                            room: 'G701',
+                            faculty: '基础医学院',
+                            courseName: '人体解剖学',
+                            teacherName: '朱教授',
+                            teacherTitle: '教授',
+                            courseTime: '周一 7-8节',
+                            courseType: '专业课'
+                        }
+                    ]
+                }
+            ]
+        ];
+
+        console.log('Generated improved mock data with floors:', mockBuildings);
+        return mockBuildings;
     }
 
     // actions (普通函数)
@@ -67,27 +425,9 @@ export const useCourseStore = defineStore('course', () => {
         isLoading.value = true;
         error.value = null; // 重置错误状态
 
-        // // 使用Mock数据进行演示
-        // console.log('使用新的Mock数据结构进行演示...');
+        // 使用真实API获取课程数据
+        console.log('使用真实API获取课程数据...');
 
-        // try {
-        //     // 模拟网络延迟
-        //     await new Promise(resolve => setTimeout(resolve, 500));
-
-        //     // 使用新的mock数据结构
-        //     const mockData = generateMockData();
-        //     courseData.value = mockData;
-
-        //     console.log('新Mock数据加载完成:', courseData.value);
-        //     populateAllCoursesFlatList(); // 获取数据后填充扁平列表并应用初始筛选
-        // } catch (err: any) {
-        //     console.error('Mock数据加载失败:', err);
-        //     error.value = err.message || '获取课程信息失败';
-        // } finally {
-        //     isLoading.value = false;
-        // }
-
-        // 如果你想要尝试真实API，可以注释掉上面的mock代码，启用下面的真实API调用
         try {
             const res = await getCourseList(); // 使用 await 等待异步操作完成
 
@@ -101,13 +441,33 @@ export const useCourseStore = defineStore('course', () => {
                 throw new Error('Invalid data structure');
             }
 
-            // 处理数据更新
-            res.data.forEach((division: BuildingInfo[], index: number) => {
-                if (index in courseData.value) {
-                    courseData.value[index] = division;
-                }
+            console.log('API返回的新格式数据:', res.data);
+
+            // 将新的API格式转换为旧的数据结构以保持兼容性
+            const convertedData: BuildingInfo[][] = res.data.map((division: any) => {
+                return division.buildings.map((building: any, index: number) => ({
+                    building: building.buildingName,
+                    label: building.buildingName,
+                    value: index,
+                    floors: building.floors, // 保留新的floors信息
+                    infos: building.floors.flatMap((floor: any) =>
+                        floor.courses.map((course: any) => ({
+                            id: course.id,
+                            room: course.room,
+                            faculty: course.faculty,
+                            courseName: course.courseName,
+                            teacherName: course.teacherName,
+                            teacherTitle: course.teacherTitle,
+                            courseTime: formatTimeSlots(course.timeSlots),
+                            courseType: course.courseType
+                        }))
+                    )
+                }));
             });
-            console.log(courseData.value);
+
+            // 更新courseData
+            courseData.value = convertedData;
+            console.log('转换后的数据:', courseData.value);
             populateAllCoursesFlatList(); // 获取数据后填充扁平列表并应用初始筛选
         } catch (err: any) { // 更明确地捕获错误类型
             console.error('请求失败:', err);
@@ -181,7 +541,31 @@ export const useCourseStore = defineStore('course', () => {
     });
 
     function getBuildingsByDivision(divisionIndex: number): BuildingInfo[] {
-        return courseData.value[divisionIndex] || [];
+        console.log('getBuildingsByDivision called with index:', divisionIndex);
+        console.log('courseData.value:', courseData.value);
+        console.log('courseData.value[divisionIndex]:', courseData.value[divisionIndex]);
+
+        // 确保courseData.value存在且是数组
+        if (!Array.isArray(courseData.value)) {
+            console.error('courseData.value is not an array:', courseData.value);
+            return [];
+        }
+
+        // 确保索引有效
+        if (divisionIndex < 0 || divisionIndex >= courseData.value.length) {
+            console.warn(`Division index ${divisionIndex} is out of bounds`);
+            return [];
+        }
+
+        const division = courseData.value[divisionIndex];
+
+        // 确保该学部的数据是数组
+        if (!Array.isArray(division)) {
+            console.error(`Division at index ${divisionIndex} is not an array:`, division);
+            return [];
+        }
+
+        return division;
     }
 
     function setCurrentDivision(divisionIndex: number) {

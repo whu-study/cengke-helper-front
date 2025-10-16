@@ -104,8 +104,6 @@ import { ArrowRight, Top } from '@element-plus/icons-vue';
 import CourseCard from './CourseCard.vue';
 import { useCourseStore } from '@/store/modules/coursesStore';
 import type { CourseInfo } from '@/types/course';
-import type { CourseInfo as NewCourseInfo, TimeSlot } from '@/types/courseNew';
-import { generateNewMockData, FloorDataAdapter } from '@/utils/newMockData';
 
 const courseStore = useCourseStore();
 
@@ -126,50 +124,70 @@ const selectedFloor = ref<number | null>(null);
 const showBackToTop = ref(false);
 const scrollThreshold = 300; // 滚动超过300px显示按钮
 
-// 新数据适配器
-const newMockData = generateNewMockData();
-const dataAdapter = new FloorDataAdapter(newMockData);
 
-// 将新的CourseInfo转换为旧的CourseInfo格式
-const convertNewCourseToOld = (newCourse: NewCourseInfo): CourseInfo => {
-  // 格式化时间段
-  const formatTimeSlots = (timeSlots: TimeSlot[]): string => {
-    if (!timeSlots || timeSlots.length === 0) return '';
-    
-    const dayNames = ['', '周一', '周二', '周三', '周四', '周五', '周六', '周日'];
-    
-    return timeSlots.map(slot => 
-      `${dayNames[slot.dayOfWeek]} ${slot.startPeriod}-${slot.endPeriod}节`
-    ).join(' ');
-  };
-
-  return {
-    id: newCourse.id,
-    room: newCourse.room,
-    faculty: newCourse.faculty,
-    courseName: newCourse.courseName,
-    teacherName: newCourse.teacherName,
-    teacherTitle: newCourse.teacherTitle,
-    courseTime: formatTimeSlots(newCourse.timeSlots),
-    courseType: newCourse.courseType
-  };
-};
 
 // 计算属性
 const currentBuildings = computed(() => {
   if (selectedDivision.value === null) return [];
-  return dataAdapter.getBuildingsByDivision(selectedDivision.value);
+  const rawBuildings = courseStore.getBuildingsByDivision(selectedDivision.value);
+  
+  console.log('rawBuildings:', rawBuildings, 'type:', typeof rawBuildings, 'isArray:', Array.isArray(rawBuildings));
+  
+  // 确保rawBuildings是数组
+  if (!Array.isArray(rawBuildings)) {
+    console.warn('rawBuildings is not an array, returning empty array');
+    return [];
+  }
+  
+  // 转换为扩展格式，添加统计信息
+  return rawBuildings.map(building => ({
+    ...building,
+    totalCourses: building.infos?.length || 0,
+    floors: building.floors || []
+  }));
 });
 
 const currentFloors = computed(() => {
-  if (selectedDivision.value === null || selectedBuilding.value === null) return [];
-  return dataAdapter.getBuildingFloors(selectedDivision.value, selectedBuilding.value);
+  if (selectedBuilding.value === null) return [];
+  const building = currentBuildings.value[selectedBuilding.value];
+  
+  // 如果建筑有floors属性，直接使用
+  if (building?.floors && building.floors.length > 0) {
+    return building.floors;
+  }
+  
+  // 否则从infos中提取楼层信息（兼容旧数据）
+  if (building?.infos) {
+    const floorMap = new Map<string, CourseInfo[]>();
+    
+    building.infos.forEach((course: CourseInfo) => {
+      const room = course.room;
+      // 提取楼层信息
+      const floorMatch = room.match(/([A-Z])(\d)/);
+      const floorName = floorMatch ? `${floorMatch[1]}楼${floorMatch[2]}层` : '其他楼层';
+      
+      if (!floorMap.has(floorName)) {
+        floorMap.set(floorName, []);
+      }
+      floorMap.get(floorName)!.push(course);
+    });
+    
+    // 转换为楼层结构
+    return Array.from(floorMap.entries()).map(([floorName, courses]) => ({
+      floorName,
+      floorNumber: parseInt(floorName.match(/(\d)/)?.[1] || '0'),
+      rooms: [...new Set(courses.map(c => c.room))],
+      courses
+    }));
+  }
+  
+  return [];
 });
 
 const currentCourses = computed(() => {
-  if (selectedDivision.value === null || selectedBuilding.value === null || selectedFloor.value === null) return [];
-  const newCourses = dataAdapter.getFloorCourses(selectedDivision.value, selectedBuilding.value, selectedFloor.value);
-  return newCourses.map(convertNewCourseToOld);
+  if (selectedFloor.value === null) return [];
+  const floor = currentFloors.value[selectedFloor.value];
+  return floor?.courses || [];
 });
 
 // 事件处理

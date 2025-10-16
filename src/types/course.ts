@@ -11,12 +11,21 @@ export interface CourseInfo {
     courseType: string;
 }
 
+// 楼层信息接口
+export interface FloorInfo {
+    floorName: string;
+    floorNumber: number;
+    rooms: string[];
+    courses: CourseInfo[];
+}
+
 // 教学楼信息接口
 export interface BuildingInfo {
     building: string;
     label: string;
     value: number;
     infos: CourseInfo[];
+    floors?: FloorInfo[];  // 可选的楼层信息，用于新的四级导航
 }
 
 // 学部信息接口（假设最外层数组每个元素是一个学部）
@@ -40,9 +49,9 @@ export interface CourseReviewInfo extends CourseReviewPayload {
 
 // 建议增加一个更详细的课程信息类型，用于包含描述、平均分等
 export interface CourseDetail extends CourseInfo {
-   description?: string;
-   credits?: number;
-   rating?: number; // 平均评分
-   reviewCount?: number; // 评价数量
-   // 其他详细信息
+    description?: string;
+    credits?: number;
+    rating?: number; // 平均评分
+    reviewCount?: number; // 评价数量
+    // 其他详细信息
 }
