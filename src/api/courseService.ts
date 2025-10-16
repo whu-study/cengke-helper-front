@@ -6,7 +6,7 @@ import {apiPrefix} from "./globalConst.ts";
 export const getCourseList = (): Promise<TransDef<BuildingInfo[][]>> => { // 假设 getCourseList 返回的是 BuildingInfo 数组的 TransDef
     return myRequest({
         method: 'GET',
-        url: apiPrefix + '/courses'
+        url: apiPrefix + '/courses/structured'
     })
 }
 

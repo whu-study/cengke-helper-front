@@ -104,19 +104,8 @@ import { ArrowRight, Top } from '@element-plus/icons-vue';
 import CourseCard from './CourseCard.vue';
 import { useCourseStore } from '@/store/modules/coursesStore';
 import type { CourseInfo } from '@/types/course';
-
-// 扩展的数据接口
-interface FloorInfo {
-  floorName: string;
-  rooms: string[];
-  courses: CourseInfo[];
-}
-
-interface ExtendedBuildingInfo {
-  building: string;
-  floors: FloorInfo[];
-  totalCourses: number;
-}
+import type { CourseInfo as NewCourseInfo, TimeSlot } from '@/types/courseNew';
+import { generateNewMockData, FloorDataAdapter } from '@/utils/newMockData';
 
 const courseStore = useCourseStore();
 
@@ -137,54 +126,50 @@ const selectedFloor = ref<number | null>(null);
 const showBackToTop = ref(false);
 const scrollThreshold = 300; // 滚动超过300px显示按钮
 
-// 将原始数据转换为四级结构
-const convertToFourLevelStructure = (buildings: any[]) => {
-  return buildings.map(building => {
-    const floorMap = new Map<string, CourseInfo[]>();
+// 新数据适配器
+const newMockData = generateNewMockData();
+const dataAdapter = new FloorDataAdapter(newMockData);
+
+// 将新的CourseInfo转换为旧的CourseInfo格式
+const convertNewCourseToOld = (newCourse: NewCourseInfo): CourseInfo => {
+  // 格式化时间段
+  const formatTimeSlots = (timeSlots: TimeSlot[]): string => {
+    if (!timeSlots || timeSlots.length === 0) return '';
     
-    // 按楼层分组课程
-    building.infos.forEach((course: CourseInfo) => {
-      const room = course.room;
-      // 提取楼层信息（假设房间号格式如 A101, B205 等）
-      const floorMatch = room.match(/([A-Z])(\d)/);
-      const floorName = floorMatch ? `${floorMatch[1]}楼 ${floorMatch[2]}层` : '其他楼层';
-      
-      if (!floorMap.has(floorName)) {
-        floorMap.set(floorName, []);
-      }
-      floorMap.get(floorName)!.push(course);
-    });
+    const dayNames = ['', '周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+    
+    return timeSlots.map(slot => 
+      `${dayNames[slot.dayOfWeek]} ${slot.startPeriod}-${slot.endPeriod}节`
+    ).join(' ');
+  };
 
-    // 转换为楼层结构
-    const floors: FloorInfo[] = Array.from(floorMap.entries()).map(([floorName, courses]) => ({
-      floorName,
-      rooms: [...new Set(courses.map(c => c.room))],
-      courses
-    }));
-
-    return {
-      building: building.building,
-      floors,
-      totalCourses: building.infos.length
-    } as ExtendedBuildingInfo;
-  });
+  return {
+    id: newCourse.id,
+    room: newCourse.room,
+    faculty: newCourse.faculty,
+    courseName: newCourse.courseName,
+    teacherName: newCourse.teacherName,
+    teacherTitle: newCourse.teacherTitle,
+    courseTime: formatTimeSlots(newCourse.timeSlots),
+    courseType: newCourse.courseType
+  };
 };
 
 // 计算属性
 const currentBuildings = computed(() => {
   if (selectedDivision.value === null) return [];
-  const rawBuildings = courseStore.getBuildingsByDivision(selectedDivision.value);
-  return convertToFourLevelStructure(rawBuildings);
+  return dataAdapter.getBuildingsByDivision(selectedDivision.value);
 });
 
 const currentFloors = computed(() => {
-  if (selectedBuilding.value === null) return [];
-  return currentBuildings.value[selectedBuilding.value]?.floors || [];
+  if (selectedDivision.value === null || selectedBuilding.value === null) return [];
+  return dataAdapter.getBuildingFloors(selectedDivision.value, selectedBuilding.value);
 });
 
 const currentCourses = computed(() => {
-  if (selectedFloor.value === null) return [];
-  return currentFloors.value[selectedFloor.value]?.courses || [];
+  if (selectedDivision.value === null || selectedBuilding.value === null || selectedFloor.value === null) return [];
+  const newCourses = dataAdapter.getFloorCourses(selectedDivision.value, selectedBuilding.value, selectedFloor.value);
+  return newCourses.map(convertNewCourseToOld);
 });
 
 // 事件处理
