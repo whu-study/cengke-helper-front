@@ -188,12 +188,13 @@ onMounted(() => {
   // 不在这里主动请求数据，依赖上级组件的数据管理
   // 只有在数据确实为空且没有正在加载时才请求
   if (!courseStore.isLoading && 
+      !courseStore.hasAttemptedFetch &&
       courseStore.allCoursesFlatList.length === 0 && 
       (!courseStore.courseData || courseStore.courseData.every(division => division.length === 0))) {
     console.log('KingArea: 数据为空且未在加载，发起请求');
     courseStore.fetchCourseData();
   } else {
-    console.log('KingArea: 数据已存在或正在加载，跳过请求');
+    console.log('KingArea: 数据已存在、正在加载或已尝试获取，跳过请求');
   }
   
   nextTick(() => {

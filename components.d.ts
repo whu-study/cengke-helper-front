@@ -16,6 +16,7 @@ declare module 'vue' {
     CourseReviewForm: typeof import('./src/components/course/CourseReviewForm.vue')['default']
     CourseReviewItem: typeof import('./src/components/course/CourseReviewItem.vue')['default']
     CreatePostForm: typeof import('./src/components/post/CreatePostForm.vue')['default']
+    CurrentTimeDisplay: typeof import('./src/components/CurrentTimeDisplay.vue')['default']
     ElAlert: typeof import('element-plus/es')['ElAlert']
     ElAside: typeof import('element-plus/es')['ElAside']
     ElAvatar: typeof import('element-plus/es')['ElAvatar']

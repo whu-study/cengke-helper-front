@@ -55,3 +55,13 @@ export interface CourseDetail extends CourseInfo {
     reviewCount?: number; // 评价数量
     // 其他详细信息
 }
+
+// 当前课程时间信息接口
+export interface CurrentTimeInfo {
+    weekNum: number;        // 当前周次
+    weekday: number;        // 星期几（1-7）
+    weekdayName: string;    // 星期名称（如"周三"）
+    lessonNum: number;      // 当前节次
+    lessonStatus: string;   // 节次状态（如"第3节"）
+    timestamp: number;      // 时间戳
+}

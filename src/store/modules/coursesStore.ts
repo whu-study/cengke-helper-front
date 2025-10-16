@@ -3,7 +3,9 @@ import {
     getCourseList,
     submitCourseReview as apiSubmitCourseReview,
     getCourseReviews as apiGetCourseReviews,
-    getCourseDetail as apiGetCourseDetail
+    getCourseDetail as apiGetCourseDetail,
+    getCurrentTime as apiGetCurrentTime,
+    type CourseQueryParams
 } from '@/api/courseService';
 // 课程信息接口，现在只依赖 course.ts 中的定义
 import type {
@@ -11,7 +13,8 @@ import type {
     CourseInfo,
     CourseReviewInfo as CourseReview,
     CourseReviewPayload,
-    CourseDetail
+    CourseDetail,
+    CurrentTimeInfo
 } from '@/types/course'; // 使用 CourseReviewInfo as CourseReview, 并导入 CourseDetail
 import { ref, computed } from 'vue';
 
@@ -31,6 +34,15 @@ export const useCourseStore = defineStore('course', () => {
     const filteredCourses = ref<CourseInfo[]>([]);    // 筛选后的课程列表
     const currentFacultyFilter = ref<string | null>(null);
     const currentCourseIdFilter = ref<number | null>(null); // 按课程ID筛选
+
+    // 当前时间信息
+    const currentTimeInfo = ref<CurrentTimeInfo | null>(null);
+    const isTimeLoading = ref(false);
+
+    // 时间查询参数 - 用于用户自定义查看特定时间的课程
+    const selectedTimeQuery = ref<CourseQueryParams | null>(null);
+    const isUsingCustomTime = ref(false); // 是否使用自定义时间查询
+    const hasAttemptedFetch = ref(false); // 是否已经尝试过获取数据（防止无限重复请求）
     // getters
     const currentDivision = computed(() => _currentDivision.value);
     const selectedCourseId = computed(() => currentCourseInfo.value?.id || null);
@@ -477,16 +489,22 @@ export const useCourseStore = defineStore('course', () => {
     // }
 
     // actions (普通函数)
-    async function fetchCourseData() { // 将方法改为 async/await 以便更清晰地处理异步操作
+    async function fetchCourseData(queryParams?: CourseQueryParams, forceRefresh = false) {
         // 防止重复请求
         if (isLoading.value) {
             console.log('fetchCourseData: 已有请求正在进行中，跳过重复请求');
             return;
         }
 
-        // 如果数据已存在，也跳过请求
-        if (allCoursesFlatList.value.length > 0) {
+        // 如果数据已存在且不是强制刷新，也跳过请求（除非有查询参数）
+        if (!forceRefresh && !queryParams && allCoursesFlatList.value.length > 0) {
             console.log('fetchCourseData: 数据已存在，跳过请求');
+            return;
+        }
+
+        // 如果没有查询参数且已经尝试过获取数据，避免无限重复请求
+        if (!queryParams && !forceRefresh && hasAttemptedFetch.value) {
+            console.log('fetchCourseData: 已经尝试过获取数据，避免重复请求');
             return;
         }
 
@@ -494,10 +512,10 @@ export const useCourseStore = defineStore('course', () => {
         error.value = null; // 重置错误状态
 
         // 使用真实API获取课程数据
-        console.log('fetchCourseData: 开始获取课程数据...');
+        console.log('fetchCourseData: 开始获取课程数据...', queryParams ? `查询参数: ${JSON.stringify(queryParams)}` : '默认查询');
 
         try {
-            const res = await getCourseList(); // 使用 await 等待异步操作完成
+            const res = await getCourseList(queryParams); // 传递查询参数
 
             // 校验 API 返回码
             if (res.code !== 0) {
@@ -550,13 +568,19 @@ export const useCourseStore = defineStore('course', () => {
 
             // 将新的API格式转换为旧的数据结构以保持兼容性
             const convertedData: BuildingInfo[][] = res.data.map((division: any) => {
+                // 如果学部没有buildings或buildings为空，返回空数组
+                if (!division.buildings || !Array.isArray(division.buildings) || division.buildings.length === 0) {
+                    console.log('学部没有教学楼数据:', division.divisionName || 'Unknown Division');
+                    return [];
+                }
+
                 return division.buildings.map((building: any, index: number) => ({
                     building: building.buildingName,
                     label: building.buildingName,
                     value: index,
                     floors: building.floors, // 保留新的floors信息
-                    infos: building.floors.flatMap((floor: any) =>
-                        floor.courses.map((course: any) => {
+                    infos: (building.floors || []).flatMap((floor: any) =>
+                        (floor.courses || []).map((course: any) => {
                             const formattedTime = formatTimeSlots(course.timeSlots);
                             console.log(`课程 ${course.courseName} - timeSlots:`, course.timeSlots, '-> courseTime:', formattedTime);
                             return {
@@ -578,9 +602,14 @@ export const useCourseStore = defineStore('course', () => {
             courseData.value = convertedData;
             console.log('转换后的数据:', courseData.value);
             populateAllCoursesFlatList(); // 获取数据后填充扁平列表并应用初始筛选
+
+            // 标记已经尝试过获取数据
+            hasAttemptedFetch.value = true;
         } catch (err: any) { // 更明确地捕获错误类型
             console.error('请求失败:', err);
             error.value = err.message || '获取课程信息失败';
+            // 即使失败也标记为已尝试，避免无限重复请求
+            hasAttemptedFetch.value = true;
         } finally {
             isLoading.value = false;
         }
@@ -750,6 +779,77 @@ export const useCourseStore = defineStore('course', () => {
         }
     }
 
+    // 获取当前时间信息
+    async function fetchCurrentTime() {
+        isTimeLoading.value = true;
+        error.value = null;
+        try {
+            const res = await apiGetCurrentTime();
+            if (res.code === 0) {
+                currentTimeInfo.value = res.data as CurrentTimeInfo;
+                console.log('当前时间信息:', currentTimeInfo.value);
+            } else {
+                throw new Error(res.msg || '获取当前时间信息失败');
+            }
+        } catch (err: any) {
+            console.error('获取当前时间信息失败:', err);
+            error.value = err.message;
+            currentTimeInfo.value = null;
+        } finally {
+            isTimeLoading.value = false;
+        }
+    }
+
+    // 设置自定义时间查询
+    function setCustomTimeQuery(params: CourseQueryParams) {
+        selectedTimeQuery.value = params;
+        isUsingCustomTime.value = true;
+        // 重新获取课程数据时允许重复请求
+        hasAttemptedFetch.value = false;
+        fetchCourseData(params, true);
+    }
+
+    // 回到当前时间
+    function resetToCurrentTime() {
+        selectedTimeQuery.value = null;
+        isUsingCustomTime.value = false;
+        // 重新获取当前时间的课程数据时允许重复请求
+        hasAttemptedFetch.value = false;
+        fetchCourseData(undefined, true);
+    }
+
+    // 获取下一节课的课程安排
+    async function fetchNextLessonCourses() {
+        if (!currentTimeInfo.value) {
+            await fetchCurrentTime();
+        }
+
+        if (currentTimeInfo.value) {
+            let nextLessonNum = currentTimeInfo.value.lessonNum + 1;
+            let nextWeekday = currentTimeInfo.value.weekday;
+            let nextWeekNum = currentTimeInfo.value.weekNum;
+
+            // 如果超过一天的最大节次（假设最多12节课），跳到下一天第1节
+            if (nextLessonNum > 12) {
+                nextLessonNum = 1;
+                nextWeekday = nextWeekday === 7 ? 1 : nextWeekday + 1;
+
+                // 如果是周一，进入下一周
+                if (nextWeekday === 1) {
+                    nextWeekNum += 1;
+                }
+            }
+
+            const nextLessonQuery: CourseQueryParams = {
+                weekNum: nextWeekNum,
+                weekday: nextWeekday,
+                lessonNum: nextLessonNum
+            };
+
+            setCustomTimeQuery(nextLessonQuery);
+        }
+    }
+
     return {
         courseData,
         isLoading,
@@ -774,6 +874,17 @@ export const useCourseStore = defineStore('course', () => {
         facultyOptionsForFilter,
         courseNameOptionsForFilter,
         filteredCourses,
-        allCoursesFlatList
+        allCoursesFlatList,
+        // 当前时间相关
+        currentTimeInfo,
+        isTimeLoading,
+        fetchCurrentTime,
+        // 时间查询相关
+        selectedTimeQuery,
+        isUsingCustomTime,
+        hasAttemptedFetch,
+        setCustomTimeQuery,
+        resetToCurrentTime,
+        fetchNextLessonCourses
     };
 });

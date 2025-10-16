@@ -16,6 +16,7 @@ import CourseReviewForm from '@/components/course/CourseReviewForm.vue';
 import CourseReviewItem from '@/components/course/CourseReviewItem.vue'; // 导入课程评价项组件
 import PostItem from '@/components/post/PostItem.vue';
 import CreatePostForm from '@/components/post/CreatePostForm.vue';
+import CurrentTimeDisplay from '@/components/CurrentTimeDisplay.vue';
 
 import { ElMessage, ElDialog, ElButton, ElDivider, ElSkeleton, ElAlert, ElEmpty, ElText } from 'element-plus';
 import { ChatDotSquare, Plus } from '@element-plus/icons-vue';
@@ -53,11 +54,13 @@ const prefillTagsForCreatePost = ref<string[]>([]);
 
 onMounted(() => {
   // 移动端主页统一负责加载课程数据
-  if (coursesStore.allCoursesFlatList.length === 0 && !coursesStore.isLoading) {
+  if (coursesStore.allCoursesFlatList.length === 0 && 
+      !coursesStore.isLoading && 
+      !coursesStore.hasAttemptedFetch) {
     console.log('Mobile HomePage: 主动加载课程数据');
     coursesStore.fetchCourseData();
   } else {
-    console.log('Mobile HomePage: 课程数据已存在或正在加载');
+    console.log('Mobile HomePage: 课程数据已存在、正在加载或已尝试获取');
   }
 });
 
@@ -385,9 +388,14 @@ const handlePostCreated = async (payload: CreatePostBody) => { // [修改点] �
   @cancel-edit="handleCreatePostCancel"
 />
   </el-dialog>
-  <n-h3 style="text-align: center">
-    蹭课小助手 Pro
-  </n-h3>
+  <div class="mobile-header">
+    <n-h3 style="text-align: center; margin-bottom: 10px;">
+      蹭课小助手 Pro
+    </n-h3>
+    <div class="mobile-time-display">
+      <CurrentTimeDisplay />
+    </div>
+  </div>
   <n-divider />
   <n-tabs type="segment" animated>
       <n-tab-pane name="page1" tab="小助手首页">
@@ -607,8 +615,13 @@ const handlePostCreated = async (payload: CreatePostBody) => { // [修改点] �
   align-items: center;
   min-height: 300px; // 确保有足够空间显示 Empty 状态
   padding: 20px;
-  .el-empty {
-    // 可以自定义 Empty 组件的样式
+}
+
+.mobile-header {
+  .mobile-time-display {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
   }
 }
 

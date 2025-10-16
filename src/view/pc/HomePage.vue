@@ -3,8 +3,13 @@
     <!-- 页面头部 -->
     <div class="page-header">
       <div class="header-content">
-        <h1 class="page-title">蹭课小助手</h1>
-        <p class="page-subtitle">发现优质课程，分享学习心得</p>
+        <div class="header-left">
+          <h1 class="page-title">蹭课小助手</h1>
+          <p class="page-subtitle">发现优质课程，分享学习心得</p>
+        </div>
+        <div class="header-right">
+          <CurrentTimeDisplay />
+        </div>
       </div>
     </div>
 
@@ -378,6 +383,7 @@ import CourseReviewForm from '@/components/course/CourseReviewForm.vue';
 import CourseReviewItem from '@/components/course/CourseReviewItem.vue';
 import PostItem from '@/components/post/PostItem.vue';
 import CreatePostForm from '@/components/post/CreatePostForm.vue';
+import CurrentTimeDisplay from '@/components/CurrentTimeDisplay.vue';
 
 // 图标导入
 import {
@@ -591,11 +597,13 @@ onMounted(() => {
   fetchRecentPosts();
   
   // 主页统一负责加载课程数据
-  if (coursesStore.allCoursesFlatList.length === 0 && !coursesStore.isLoading) {
+  if (coursesStore.allCoursesFlatList.length === 0 && 
+      !coursesStore.isLoading && 
+      !coursesStore.hasAttemptedFetch) {
     console.log('PC HomePage: 主动加载课程数据');
     coursesStore.fetchCourseData();
   } else {
-    console.log('PC HomePage: 课程数据已存在或正在加载');
+    console.log('PC HomePage: 课程数据已存在、正在加载或已尝试获取');
   }
 });
 </script>
@@ -614,19 +622,30 @@ onMounted(() => {
   border-radius: 12px;
 
   .header-content {
-    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: 0 20px;
+    
+    .header-left {
+      text-align: left;
+      
+      .page-title {
+        font-size: 36px;
+        font-weight: 700;
+        margin: 0 0 10px 0;
+      }
 
-    .page-title {
-      font-size: 36px;
-      font-weight: 700;
-      margin: 0 0 10px 0;
+      .page-subtitle {
+        font-size: 18px;
+        opacity: 0.9;
+        margin: 0;
+      }
     }
-
-    .page-subtitle {
-      font-size: 18px;
-      opacity: 0.9;
-      margin: 0;
+    
+    .header-right {
+      display: flex;
+      align-items: center;
     }
   }
 }
