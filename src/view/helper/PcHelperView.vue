@@ -88,7 +88,11 @@
           <!-- 课程展示区域 -->
           <div class="courses-display">
             <div v-if="selectedFloor === null" class="floor-prompt">
-              <el-empty description="请选择楼层查看课程" :image-size="80" />
+              <el-empty 
+                description="请选择楼层查看课程" 
+                :image-size="80"
+                image="/src/assets/desk3.png"
+              />
             </div>
             
             <div v-else class="floor-courses">
@@ -101,7 +105,11 @@
               </div>
 
               <div v-if="currentCourses.length === 0" class="no-courses">
-                <el-empty description="该楼层暂无课程安排" :image-size="60" />
+                <el-empty 
+                  description="该楼层暂无课程安排" 
+                  :image-size="60"
+                  image="/src/assets/desk3.png"
+                />
               </div>
 
               <div v-else class="courses-grid">

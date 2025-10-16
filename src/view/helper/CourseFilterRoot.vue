@@ -38,7 +38,11 @@ const openCourseDrawer = (course: CourseInfo) => {
       </el-row>
     </div>
     <div v-else class="no-results">
-      <el-empty description="没有找到匹配的课程" />
+      <el-empty 
+        description="没有找到匹配的课程" 
+        :image-size="80"
+        image="/src/assets/desk3.png"
+      />
     </div>
   </div>
 </template>
