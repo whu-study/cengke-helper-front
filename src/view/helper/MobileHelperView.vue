@@ -83,12 +83,24 @@
         </div>
       </div>
     </div>
+
+    <!-- 回到顶部按钮 -->
+    <transition name="fade-slide">
+      <div
+        v-if="showBackToTop"
+        class="back-to-top"
+        @click="scrollToTop"
+      >
+        <el-icon class="back-icon"><Top /></el-icon>
+        <span class="back-text">顶部</span>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import { ArrowRight } from '@element-plus/icons-vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ArrowRight, Top } from '@element-plus/icons-vue';
 import CourseCard from './CourseCard.vue';
 import { useCourseStore } from '@/store/modules/coursesStore';
 import type { CourseInfo } from '@/types/course';
@@ -120,6 +132,10 @@ const divisionOptions = [
 const selectedDivision = ref<number | null>(null);
 const selectedBuilding = ref<number | null>(null);
 const selectedFloor = ref<number | null>(null);
+
+// 回到顶部功能
+const showBackToTop = ref(false);
+const scrollThreshold = 300; // 滚动超过300px显示按钮
 
 // 将原始数据转换为四级结构
 const convertToFourLevelStructure = (buildings: any[]) => {
@@ -188,6 +204,20 @@ const onFloorChange = (index: number) => {
   selectedFloor.value = index;
 };
 
+// 滚动事件处理
+const handleScroll = () => {
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
+  showBackToTop.value = scrollTop > scrollThreshold;
+};
+
+// 回到顶部方法
+const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+};
+
 // 生命周期
 onMounted(() => {
   // 确保数据加载
@@ -198,6 +228,14 @@ onMounted(() => {
   // 默认选择第一个学部
   selectedDivision.value = 0;
   courseStore.setCurrentDivision(0);
+
+  // 添加滚动监听
+  window.addEventListener('scroll', handleScroll, { passive: true });
+});
+
+onUnmounted(() => {
+  // 移除滚动监听
+  window.removeEventListener('scroll', handleScroll);
 });
 </script>
 
@@ -414,6 +452,64 @@ onMounted(() => {
   }
 }
 
+// 回到顶部按钮
+.back-to-top {
+  position: fixed;
+  right: 20px;
+  bottom: 120px;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #dda15e 0%, #bc6c25 100%);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(221, 161, 94, 0.3);
+  z-index: 1000;
+  transition: all 0.3s ease;
+  user-select: none;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(221, 161, 94, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  .back-icon {
+    font-size: 18px;
+    color: #fff;
+    margin-bottom: 2px;
+  }
+
+  .back-text {
+    font-size: 10px;
+    color: #fff;
+    font-weight: 500;
+    line-height: 1;
+  }
+}
+
+// 动画效果
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.3s ease;
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateY(20px) scale(0.8);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(20px) scale(0.8);
+}
+
 // 响应式调整
 @media (max-width: 480px) {
   .mobile-helper {
@@ -432,6 +528,21 @@ onMounted(() => {
 
     .division-name {
       font-size: 11px;
+    }
+  }
+
+  .back-to-top {
+    right: 16px;
+    bottom: 100px;
+    width: 48px;
+    height: 48px;
+
+    .back-icon {
+      font-size: 16px;
+    }
+
+    .back-text {
+      font-size: 9px;
     }
   }
 }
