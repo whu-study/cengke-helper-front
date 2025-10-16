@@ -71,7 +71,11 @@
       
       <div class="courses-list">
         <div v-if="currentCourses.length === 0" class="empty-courses">
-          <el-empty description="该楼层暂无课程安排" :image-size="60" />
+          <el-empty 
+            description="该楼层暂无课程安排" 
+            :image-size="120"
+            image="/src/assets/desk3.png"
+          />
         </div>
         <div v-else class="course-items">
           <CourseCard

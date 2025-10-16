@@ -21,7 +21,6 @@ GET /api/courses
       "divisionId": "liberal_arts",
       "divisionName": "文理学部",
       "description": "文理基础学科教学区域",
-      "icon": "/assets/icons/liberal_arts.svg",
       "totalBuildings": 2,
       "totalFloors": 6,
       "totalCourses": 25,

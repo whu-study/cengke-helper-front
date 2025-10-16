@@ -84,341 +84,341 @@ export const useCourseStore = defineStore('course', () => {
     }
 
     // 改进的Mock数据生成器 - 包含正确的楼层信息
-    function generateMockData(): BuildingInfo[][] {
-        const mockBuildings: BuildingInfo[][] = [
-            // 文理学部 (0)
-            [
-                {
-                    building: '文理学部教学楼A',
-                    label: '文理学部教学楼A',
-                    value: 0,
-                    // 添加floors属性用于新的楼层导航
-                    floors: [
-                        {
-                            floorName: 'A楼1层',
-                            floorNumber: 1,
-                            rooms: ['A101', 'A102', 'A103', 'A104'],
-                            courses: [
-                                {
-                                    id: 1,
-                                    room: 'A101',
-                                    faculty: '数学与统计学院',
-                                    courseName: '高等数学A(1)',
-                                    teacherName: '张教授',
-                                    teacherTitle: '教授',
-                                    courseTime: '周一 1-2节',
-                                    courseType: '必修课'
-                                },
-                                {
-                                    id: 2,
-                                    room: 'A103',
-                                    faculty: '物理科学与技术学院',
-                                    courseName: '大学物理',
-                                    teacherName: '李教授',
-                                    teacherTitle: '副教授',
-                                    courseTime: '周二 3-4节',
-                                    courseType: '必修课'
-                                }
-                            ]
-                        },
-                        {
-                            floorName: 'A楼2层',
-                            floorNumber: 2,
-                            rooms: ['A201', 'A202', 'A203', 'A204'],
-                            courses: [
-                                {
-                                    id: 3,
-                                    room: 'A201',
-                                    faculty: '化学与分子科学学院',
-                                    courseName: '无机化学',
-                                    teacherName: '王教授',
-                                    teacherTitle: '教授',
-                                    courseTime: '周三 1-2节',
-                                    courseType: '专业课'
-                                },
-                                {
-                                    id: 16,
-                                    room: 'A202',
-                                    faculty: '数学与统计学院',
-                                    courseName: '线性代数',
-                                    teacherName: '陈教授',
-                                    teacherTitle: '副教授',
-                                    courseTime: '周四 3-4节',
-                                    courseType: '必修课'
-                                }
-                            ]
-                        },
-                        {
-                            floorName: 'A楼3层',
-                            floorNumber: 3,
-                            rooms: ['A301', 'A302', 'A303'],
-                            courses: [
-                                {
-                                    id: 17,
-                                    room: 'A301',
-                                    faculty: '物理科学与技术学院',
-                                    courseName: '理论力学',
-                                    teacherName: '刘教授',
-                                    teacherTitle: '教授',
-                                    courseTime: '周五 1-2节',
-                                    courseType: '专业课'
-                                }
-                            ]
-                        }
-                    ],
-                    // 保持兼容性的infos字段 - 扁平化所有课程
-                    infos: [
-                        {
-                            id: 1,
-                            room: 'A101',
-                            faculty: '数学与统计学院',
-                            courseName: '高等数学A(1)',
-                            teacherName: '张教授',
-                            teacherTitle: '教授',
-                            courseTime: '周一 1-2节',
-                            courseType: '必修课'
-                        },
-                        {
-                            id: 2,
-                            room: 'A103',
-                            faculty: '物理科学与技术学院',
-                            courseName: '大学物理',
-                            teacherName: '李教授',
-                            teacherTitle: '副教授',
-                            courseTime: '周二 3-4节',
-                            courseType: '必修课'
-                        },
-                        {
-                            id: 3,
-                            room: 'A201',
-                            faculty: '化学与分子科学学院',
-                            courseName: '无机化学',
-                            teacherName: '王教授',
-                            teacherTitle: '教授',
-                            courseTime: '周三 1-2节',
-                            courseType: '专业课'
-                        },
-                        {
-                            id: 16,
-                            room: 'A202',
-                            faculty: '数学与统计学院',
-                            courseName: '线性代数',
-                            teacherName: '陈教授',
-                            teacherTitle: '副教授',
-                            courseTime: '周四 3-4节',
-                            courseType: '必修课'
-                        },
-                        {
-                            id: 17,
-                            room: 'A301',
-                            faculty: '物理科学与技术学院',
-                            courseName: '理论力学',
-                            teacherName: '刘教授',
-                            teacherTitle: '教授',
-                            courseTime: '周五 1-2节',
-                            courseType: '专业课'
-                        }
-                    ]
-                },
-                {
-                    building: '文理学部教学楼B',
-                    label: '文理学部教学楼B',
-                    value: 1,
-                    floors: [
-                        {
-                            floorName: 'B楼1层',
-                            floorNumber: 1,
-                            rooms: ['B101', 'B102'],
-                            courses: [
-                                {
-                                    id: 4,
-                                    room: 'B101',
-                                    faculty: '文学院',
-                                    courseName: '中国古代文学',
-                                    teacherName: '赵教授',
-                                    teacherTitle: '教授',
-                                    courseTime: '周四 5-6节',
-                                    courseType: '专业课'
-                                },
-                                {
-                                    id: 5,
-                                    room: 'B102',
-                                    faculty: '外国语言文学学院',
-                                    courseName: '英语精读',
-                                    teacherName: '刘教授',
-                                    teacherTitle: '副教授',
-                                    courseTime: '周五 1-2节',
-                                    courseType: '通识课'
-                                }
-                            ]
-                        }
-                    ],
-                    infos: [
-                        {
-                            id: 4,
-                            room: 'B101',
-                            faculty: '文学院',
-                            courseName: '中国古代文学',
-                            teacherName: '赵教授',
-                            teacherTitle: '教授',
-                            courseTime: '周四 5-6节',
-                            courseType: '专业课'
-                        },
-                        {
-                            id: 5,
-                            room: 'B102',
-                            faculty: '外国语言文学学院',
-                            courseName: '英语精读',
-                            teacherName: '刘教授',
-                            teacherTitle: '副教授',
-                            courseTime: '周五 1-2节',
-                            courseType: '通识课'
-                        }
-                    ]
-                }
-            ],
-            // 工学部 (1)  
-            [
-                {
-                    building: '工学部主楼',
-                    label: '工学部主楼',
-                    value: 0,
-                    floors: [
-                        {
-                            floorName: 'C楼3层',
-                            floorNumber: 3,
-                            rooms: ['C301', 'C302'],
-                            courses: [
-                                {
-                                    id: 6,
-                                    room: 'C301',
-                                    faculty: '土木建筑工程学院',
-                                    courseName: '结构力学',
-                                    teacherName: '陈教授',
-                                    teacherTitle: '教授',
-                                    courseTime: '周一 3-4节',
-                                    courseType: '专业课'
-                                },
-                                {
-                                    id: 7,
-                                    room: 'C302',
-                                    faculty: '机械与动力工程学院',
-                                    courseName: '机械设计',
-                                    teacherName: '孙教授',
-                                    teacherTitle: '副教授',
-                                    courseTime: '周二 5-6节',
-                                    courseType: '专业课'
-                                }
-                            ]
-                        }
-                    ],
-                    infos: [
-                        {
-                            id: 6,
-                            room: 'C301',
-                            faculty: '土木建筑工程学院',
-                            courseName: '结构力学',
-                            teacherName: '陈教授',
-                            teacherTitle: '教授',
-                            courseTime: '周一 3-4节',
-                            courseType: '专业课'
-                        },
-                        {
-                            id: 7,
-                            room: 'C302',
-                            faculty: '机械与动力工程学院',
-                            courseName: '机械设计',
-                            teacherName: '孙教授',
-                            teacherTitle: '副教授',
-                            courseTime: '周二 5-6节',
-                            courseType: '专业课'
-                        }
-                    ]
-                }
-            ],
-            // 信息学部 (2)
-            [
-                {
-                    building: '信息学部计算机楼',
-                    label: '信息学部计算机楼',
-                    value: 0,
-                    floors: [
-                        {
-                            floorName: 'E楼5层',
-                            floorNumber: 5,
-                            rooms: ['E501', 'E502', 'E503'],
-                            courses: [
-                                {
-                                    id: 9,
-                                    room: 'E501',
-                                    faculty: '计算机学院',
-                                    courseName: '数据结构与算法',
-                                    teacherName: '吴教授',
-                                    teacherTitle: '教授',
-                                    courseTime: '周一 5-6节',
-                                    courseType: '专业课'
-                                }
-                            ]
-                        }
-                    ],
-                    infos: [
-                        {
-                            id: 9,
-                            room: 'E501',
-                            faculty: '计算机学院',
-                            courseName: '数据结构与算法',
-                            teacherName: '吴教授',
-                            teacherTitle: '教授',
-                            courseTime: '周一 5-6节',
-                            courseType: '专业课'
-                        }
-                    ]
-                }
-            ],
-            // 医学部 (3)
-            [
-                {
-                    building: '医学部教学楼',
-                    label: '医学部教学楼',
-                    value: 0,
-                    floors: [
-                        {
-                            floorName: 'G楼7层',
-                            floorNumber: 7,
-                            rooms: ['G701'],
-                            courses: [
-                                {
-                                    id: 13,
-                                    room: 'G701',
-                                    faculty: '基础医学院',
-                                    courseName: '人体解剖学',
-                                    teacherName: '朱教授',
-                                    teacherTitle: '教授',
-                                    courseTime: '周一 7-8节',
-                                    courseType: '专业课'
-                                }
-                            ]
-                        }
-                    ],
-                    infos: [
-                        {
-                            id: 13,
-                            room: 'G701',
-                            faculty: '基础医学院',
-                            courseName: '人体解剖学',
-                            teacherName: '朱教授',
-                            teacherTitle: '教授',
-                            courseTime: '周一 7-8节',
-                            courseType: '专业课'
-                        }
-                    ]
-                }
-            ]
-        ];
+    // function generateMockData(): BuildingInfo[][] {
+    //     const mockBuildings: BuildingInfo[][] = [
+    //         // 文理学部 (0)
+    //         [
+    //             {
+    //                 building: '文理学部教学楼A',
+    //                 label: '文理学部教学楼A',
+    //                 value: 0,
+    //                 // 添加floors属性用于新的楼层导航
+    //                 floors: [
+    //                     {
+    //                         floorName: 'A楼1层',
+    //                         floorNumber: 1,
+    //                         rooms: ['A101', 'A102', 'A103', 'A104'],
+    //                         courses: [
+    //                             {
+    //                                 id: 1,
+    //                                 room: 'A101',
+    //                                 faculty: '数学与统计学院',
+    //                                 courseName: '高等数学A(1)',
+    //                                 teacherName: '张教授',
+    //                                 teacherTitle: '教授',
+    //                                 courseTime: '周一 1-2节',
+    //                                 courseType: '必修课'
+    //                             },
+    //                             {
+    //                                 id: 2,
+    //                                 room: 'A103',
+    //                                 faculty: '物理科学与技术学院',
+    //                                 courseName: '大学物理',
+    //                                 teacherName: '李教授',
+    //                                 teacherTitle: '副教授',
+    //                                 courseTime: '周二 3-4节',
+    //                                 courseType: '必修课'
+    //                             }
+    //                         ]
+    //                     },
+    //                     {
+    //                         floorName: 'A楼2层',
+    //                         floorNumber: 2,
+    //                         rooms: ['A201', 'A202', 'A203', 'A204'],
+    //                         courses: [
+    //                             {
+    //                                 id: 3,
+    //                                 room: 'A201',
+    //                                 faculty: '化学与分子科学学院',
+    //                                 courseName: '无机化学',
+    //                                 teacherName: '王教授',
+    //                                 teacherTitle: '教授',
+    //                                 courseTime: '周三 1-2节',
+    //                                 courseType: '专业课'
+    //                             },
+    //                             {
+    //                                 id: 16,
+    //                                 room: 'A202',
+    //                                 faculty: '数学与统计学院',
+    //                                 courseName: '线性代数',
+    //                                 teacherName: '陈教授',
+    //                                 teacherTitle: '副教授',
+    //                                 courseTime: '周四 3-4节',
+    //                                 courseType: '必修课'
+    //                             }
+    //                         ]
+    //                     },
+    //                     {
+    //                         floorName: 'A楼3层',
+    //                         floorNumber: 3,
+    //                         rooms: ['A301', 'A302', 'A303'],
+    //                         courses: [
+    //                             {
+    //                                 id: 17,
+    //                                 room: 'A301',
+    //                                 faculty: '物理科学与技术学院',
+    //                                 courseName: '理论力学',
+    //                                 teacherName: '刘教授',
+    //                                 teacherTitle: '教授',
+    //                                 courseTime: '周五 1-2节',
+    //                                 courseType: '专业课'
+    //                             }
+    //                         ]
+    //                     }
+    //                 ],
+    //                 // 保持兼容性的infos字段 - 扁平化所有课程
+    //                 infos: [
+    //                     {
+    //                         id: 1,
+    //                         room: 'A101',
+    //                         faculty: '数学与统计学院',
+    //                         courseName: '高等数学A(1)',
+    //                         teacherName: '张教授',
+    //                         teacherTitle: '教授',
+    //                         courseTime: '周一 1-2节',
+    //                         courseType: '必修课'
+    //                     },
+    //                     {
+    //                         id: 2,
+    //                         room: 'A103',
+    //                         faculty: '物理科学与技术学院',
+    //                         courseName: '大学物理',
+    //                         teacherName: '李教授',
+    //                         teacherTitle: '副教授',
+    //                         courseTime: '周二 3-4节',
+    //                         courseType: '必修课'
+    //                     },
+    //                     {
+    //                         id: 3,
+    //                         room: 'A201',
+    //                         faculty: '化学与分子科学学院',
+    //                         courseName: '无机化学',
+    //                         teacherName: '王教授',
+    //                         teacherTitle: '教授',
+    //                         courseTime: '周三 1-2节',
+    //                         courseType: '专业课'
+    //                     },
+    //                     {
+    //                         id: 16,
+    //                         room: 'A202',
+    //                         faculty: '数学与统计学院',
+    //                         courseName: '线性代数',
+    //                         teacherName: '陈教授',
+    //                         teacherTitle: '副教授',
+    //                         courseTime: '周四 3-4节',
+    //                         courseType: '必修课'
+    //                     },
+    //                     {
+    //                         id: 17,
+    //                         room: 'A301',
+    //                         faculty: '物理科学与技术学院',
+    //                         courseName: '理论力学',
+    //                         teacherName: '刘教授',
+    //                         teacherTitle: '教授',
+    //                         courseTime: '周五 1-2节',
+    //                         courseType: '专业课'
+    //                     }
+    //                 ]
+    //             },
+    //             {
+    //                 building: '文理学部教学楼B',
+    //                 label: '文理学部教学楼B',
+    //                 value: 1,
+    //                 floors: [
+    //                     {
+    //                         floorName: 'B楼1层',
+    //                         floorNumber: 1,
+    //                         rooms: ['B101', 'B102'],
+    //                         courses: [
+    //                             {
+    //                                 id: 4,
+    //                                 room: 'B101',
+    //                                 faculty: '文学院',
+    //                                 courseName: '中国古代文学',
+    //                                 teacherName: '赵教授',
+    //                                 teacherTitle: '教授',
+    //                                 courseTime: '周四 5-6节',
+    //                                 courseType: '专业课'
+    //                             },
+    //                             {
+    //                                 id: 5,
+    //                                 room: 'B102',
+    //                                 faculty: '外国语言文学学院',
+    //                                 courseName: '英语精读',
+    //                                 teacherName: '刘教授',
+    //                                 teacherTitle: '副教授',
+    //                                 courseTime: '周五 1-2节',
+    //                                 courseType: '通识课'
+    //                             }
+    //                         ]
+    //                     }
+    //                 ],
+    //                 infos: [
+    //                     {
+    //                         id: 4,
+    //                         room: 'B101',
+    //                         faculty: '文学院',
+    //                         courseName: '中国古代文学',
+    //                         teacherName: '赵教授',
+    //                         teacherTitle: '教授',
+    //                         courseTime: '周四 5-6节',
+    //                         courseType: '专业课'
+    //                     },
+    //                     {
+    //                         id: 5,
+    //                         room: 'B102',
+    //                         faculty: '外国语言文学学院',
+    //                         courseName: '英语精读',
+    //                         teacherName: '刘教授',
+    //                         teacherTitle: '副教授',
+    //                         courseTime: '周五 1-2节',
+    //                         courseType: '通识课'
+    //                     }
+    //                 ]
+    //             }
+    //         ],
+    //         // 工学部 (1)  
+    //         [
+    //             {
+    //                 building: '工学部主楼',
+    //                 label: '工学部主楼',
+    //                 value: 0,
+    //                 floors: [
+    //                     {
+    //                         floorName: 'C楼3层',
+    //                         floorNumber: 3,
+    //                         rooms: ['C301', 'C302'],
+    //                         courses: [
+    //                             {
+    //                                 id: 6,
+    //                                 room: 'C301',
+    //                                 faculty: '土木建筑工程学院',
+    //                                 courseName: '结构力学',
+    //                                 teacherName: '陈教授',
+    //                                 teacherTitle: '教授',
+    //                                 courseTime: '周一 3-4节',
+    //                                 courseType: '专业课'
+    //                             },
+    //                             {
+    //                                 id: 7,
+    //                                 room: 'C302',
+    //                                 faculty: '机械与动力工程学院',
+    //                                 courseName: '机械设计',
+    //                                 teacherName: '孙教授',
+    //                                 teacherTitle: '副教授',
+    //                                 courseTime: '周二 5-6节',
+    //                                 courseType: '专业课'
+    //                             }
+    //                         ]
+    //                     }
+    //                 ],
+    //                 infos: [
+    //                     {
+    //                         id: 6,
+    //                         room: 'C301',
+    //                         faculty: '土木建筑工程学院',
+    //                         courseName: '结构力学',
+    //                         teacherName: '陈教授',
+    //                         teacherTitle: '教授',
+    //                         courseTime: '周一 3-4节',
+    //                         courseType: '专业课'
+    //                     },
+    //                     {
+    //                         id: 7,
+    //                         room: 'C302',
+    //                         faculty: '机械与动力工程学院',
+    //                         courseName: '机械设计',
+    //                         teacherName: '孙教授',
+    //                         teacherTitle: '副教授',
+    //                         courseTime: '周二 5-6节',
+    //                         courseType: '专业课'
+    //                     }
+    //                 ]
+    //             }
+    //         ],
+    //         // 信息学部 (2)
+    //         [
+    //             {
+    //                 building: '信息学部计算机楼',
+    //                 label: '信息学部计算机楼',
+    //                 value: 0,
+    //                 floors: [
+    //                     {
+    //                         floorName: 'E楼5层',
+    //                         floorNumber: 5,
+    //                         rooms: ['E501', 'E502', 'E503'],
+    //                         courses: [
+    //                             {
+    //                                 id: 9,
+    //                                 room: 'E501',
+    //                                 faculty: '计算机学院',
+    //                                 courseName: '数据结构与算法',
+    //                                 teacherName: '吴教授',
+    //                                 teacherTitle: '教授',
+    //                                 courseTime: '周一 5-6节',
+    //                                 courseType: '专业课'
+    //                             }
+    //                         ]
+    //                     }
+    //                 ],
+    //                 infos: [
+    //                     {
+    //                         id: 9,
+    //                         room: 'E501',
+    //                         faculty: '计算机学院',
+    //                         courseName: '数据结构与算法',
+    //                         teacherName: '吴教授',
+    //                         teacherTitle: '教授',
+    //                         courseTime: '周一 5-6节',
+    //                         courseType: '专业课'
+    //                     }
+    //                 ]
+    //             }
+    //         ],
+    //         // 医学部 (3)
+    //         [
+    //             {
+    //                 building: '医学部教学楼',
+    //                 label: '医学部教学楼',
+    //                 value: 0,
+    //                 floors: [
+    //                     {
+    //                         floorName: 'G楼7层',
+    //                         floorNumber: 7,
+    //                         rooms: ['G701'],
+    //                         courses: [
+    //                             {
+    //                                 id: 13,
+    //                                 room: 'G701',
+    //                                 faculty: '基础医学院',
+    //                                 courseName: '人体解剖学',
+    //                                 teacherName: '朱教授',
+    //                                 teacherTitle: '教授',
+    //                                 courseTime: '周一 7-8节',
+    //                                 courseType: '专业课'
+    //                             }
+    //                         ]
+    //                     }
+    //                 ],
+    //                 infos: [
+    //                     {
+    //                         id: 13,
+    //                         room: 'G701',
+    //                         faculty: '基础医学院',
+    //                         courseName: '人体解剖学',
+    //                         teacherName: '朱教授',
+    //                         teacherTitle: '教授',
+    //                         courseTime: '周一 7-8节',
+    //                         courseType: '专业课'
+    //                     }
+    //                 ]
+    //             }
+    //         ]
+    //     ];
 
-        console.log('Generated improved mock data with floors:', mockBuildings);
-        return mockBuildings;
-    }
+    //     console.log('Generated improved mock data with floors:', mockBuildings);
+    //     return mockBuildings;
+    // }
 
     // actions (普通函数)
     async function fetchCourseData() { // 将方法改为 async/await 以便更清晰地处理异步操作

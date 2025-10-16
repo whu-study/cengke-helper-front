@@ -53,16 +53,17 @@
       <!-- 右侧：楼层和课程内容 -->
       <div class="right-content">
         <div v-if="selectedBuilding === null" class="empty-state">
-          <el-empty description="请先选择学部和教学楼" :image-size="120">
+          <el-empty 
+            description="请先选择学部和教学楼" 
+            :image-size="120"
+            image="/src/assets/desk3.png"
+          >
             <div class="empty-tips">
-              <p>• 左侧选择学部查看教学楼</p>
-              <p>• 点击教学楼查看楼层分布</p>
-              <p>• 选择楼层浏览课程安排</p>
+              <p>💡 点击左侧学部名称，然后选择教学楼</p>
+              <p>🏫 查看各楼层的课程安排</p>
             </div>
           </el-empty>
-        </div>
-
-        <div v-else class="building-content">
+        </div>        <div v-else class="building-content">
           <!-- 楼层导航 -->
           <div class="floor-navigation">
             <div class="nav-header">
