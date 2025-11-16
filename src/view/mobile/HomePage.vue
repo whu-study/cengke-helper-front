@@ -17,7 +17,9 @@ import CourseReviewItem from '@/components/course/CourseReviewItem.vue'; // 导�
 import PostItem from '@/components/post/PostItem.vue';
 import CreatePostForm from '@/components/post/CreatePostForm.vue';
 import CurrentTimeDisplay from '@/components/CurrentTimeDisplay.vue';
-
+import AgentChat from '@/components/agent/AgentChat.vue'; // 1. 导入 Agent 聊天组件
+import { ChatbubblesOutline as AgentIcon } from '@vicons/ionicons5'; // 2. 导入 Naive-UI 的 Icon
+import { NIcon } from 'naive-ui'; // 3. 导入 Naive-UI Icon 组件
 import { ElMessage, ElDialog, ElButton, ElDivider, ElSkeleton, ElAlert, ElEmpty, ElText } from 'element-plus';
 import { ChatDotSquare, Plus } from '@element-plus/icons-vue';
 import type { Post } from '@/types/discuss';
@@ -411,6 +413,17 @@ const handlePostCreated = async (payload: CreatePostBody) => { // [修改点] �
       <n-tab-pane name="page2" tab="课程筛选">
         <CourseFilterRoot/>
       </n-tab-pane>
+
+      <n-tab-pane name="page3" tab="AI 助手">
+      <template #tab>
+        <n-icon :component="AgentIcon" style="margin-right: 4px;" />
+        AI 助手
+      </template>
+      <div class="agent-tab-wrapper">
+        <AgentChat />
+      </div>
+    </n-tab-pane>
+
     </n-tabs>
 </template>
 
@@ -640,4 +653,16 @@ const handlePostCreated = async (payload: CreatePostBody) => { // [修改点] �
     padding: 20px 25px;
   }
 }
+
+// --- 新增样式 ---
+.agent-tab-wrapper {
+  // 计算一个高度：100vh - header 高度 - divider 高度 - tabs 高度 - 一些边距
+  // 您需要根据实际情况微调这个 'calc'
+  height: calc(100vh - 80px - 1px - 42px - 20px);
+  min-height: 400px; // 保证一个最小高度
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 8px;
+  overflow: hidden; // 让 AgentChat 的圆角生效
+}
+
 </style>
