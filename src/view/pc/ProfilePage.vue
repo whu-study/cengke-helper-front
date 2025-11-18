@@ -244,7 +244,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/store/modules/userStore';
 import { usePostsStore } from '@/store/modules/postsStore';
@@ -281,11 +281,11 @@ const activeAuthTab = ref('login');
 const myPosts = ref<Post[]>([]);
 const myPostsLoading = ref(false);
 
-// 用户统计数据（模拟）
-const userPostsCount = ref(12);
-const userCommentsCount = ref(58);
-const userLikesCount = ref(145);
-const userFollowersCount = ref(23);
+// 用户统计（来自后端 ExtendedUserProfileVO）
+const userPostsCount = computed(() => userStore.userInfo?.postsCount || 0);
+const userCommentsCount = computed(() => userStore.userInfo?.commentsCount || 0);
+const userLikesCount = computed(() => userStore.userInfo?.likesReceived || 0);
+const userFollowersCount = ref(23); // 关注者暂用本地值（后端未提供）
 
 // 用户排名（模拟）
 const userRank = ref({
@@ -394,6 +394,8 @@ const fetchMyPosts = async () => {
 // 生命周期
 onMounted(() => {
   if (userStore.ifLogin) {
+    // 刷新用户资料（含统计字段）和帖子
+    userStore.fetchUserProfile();
     fetchMyPosts();
   }
 });

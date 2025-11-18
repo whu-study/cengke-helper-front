@@ -3,6 +3,7 @@ import { myRequest } from './myAxios';
 import { apiPrefix } from './globalConst';
 import type { UserProfile } from '@/types/user';
 import type { TransDef } from "@/api/type.ts";
+import { webGetProfile, webUpdateProfile } from '@/api/profile';
 
 // --- 登录请求体和响应数据类型 ---
 export interface LoginCredentials {
@@ -89,22 +90,13 @@ export const apiLogout = (): Promise<TransDef<null>> => {
  * (Token 会在 myAxios 拦截器中自动添加)
  * (Token will be automatically added in myAxios interceptor)
  */
-export const apiFetchUserProfile = (): Promise<TransDef<UserProfile>> => {
-    return myRequest<never, UserProfile>({
-        method: 'GET',
-        url: `${apiPrefix}/users/profile`, // 与你提供的 profile.txt 一致 (Consistent with your provided profile.txt)
-    });
-};
+// 统一使用 profile.ts 中的实现，向后兼容导出
+export const apiFetchUserProfile = webGetProfile;
 
 /**
  * 更新用户个人资料
  * Updates user profile.
  * @param profileData - 要更新的个人资料数据 (Profile data to update)
  */
-export const apiUpdateUserProfile = (profileData: Partial<UserProfile>): Promise<TransDef<UserProfile>> => {
-    return myRequest<Partial<UserProfile>, UserProfile>({
-        method: 'PUT',
-        url: `${apiPrefix}/users/profile`,
-        data: profileData,
-    });
-};
+// 统一使用 profile.ts 中的实现，向后兼容导出
+export const apiUpdateUserProfile = webUpdateProfile;

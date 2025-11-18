@@ -250,10 +250,11 @@ const recommendedTags = ref([
   { name: '网络安全', count: 32 },
 ]);
 
-// 用户统计数据（模拟）
-const userPostsCount = ref(12);
-const userCommentsCount = ref(58);
-const userLikesCount = ref(145);
+// 用户统计（来自后端 ExtendedUserProfileVO）
+import { computed } from 'vue';
+const userPostsCount = computed(() => userStore.userInfo?.postsCount || 0);
+const userCommentsCount = computed(() => userStore.userInfo?.commentsCount || 0);
+const userLikesCount = computed(() => userStore.userInfo?.likesReceived || 0);
 
 // 方法
 const goBack = () => {
@@ -329,6 +330,9 @@ onMounted(() => {
     router.push('/profile');
     return;
   }
+
+  // 刷新用户资料以获取最新统计数据
+  userStore.fetchUserProfile();
 
   // 从路由参数获取初始标签
   if (route.query.tag) {
