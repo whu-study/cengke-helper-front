@@ -58,7 +58,7 @@
             <label>周次：</label>
             <el-select v-model="customWeekNum" size="small" style="width: 80px;">
               <el-option 
-                v-for="week in 20" 
+                v-for="week in 18" 
                 :key="week" 
                 :label="`第${week}周`" 
                 :value="week" 
@@ -83,7 +83,7 @@
             <label>节次：</label>
             <el-select v-model="customLessonNum" size="small" style="width: 80px;">
               <el-option 
-                v-for="lesson in 12" 
+                v-for="lesson in 13" 
                 :key="lesson" 
                 :label="`第${lesson}节`" 
                 :value="lesson" 

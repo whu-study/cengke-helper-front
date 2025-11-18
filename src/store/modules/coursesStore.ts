@@ -839,8 +839,8 @@ export const useCourseStore = defineStore('course', () => {
             let nextWeekday = currentTimeInfo.value.weekday;
             let nextWeekNum = currentTimeInfo.value.weekNum;
 
-            // 如果超过一天的最大节次（假设最多12节课），跳到下一天第1节
-            if (nextLessonNum > 12) {
+            // 如果超过一天的最大节次（假设最多13节课），跳到下一天第1节
+            if (nextLessonNum > 13) {
                 nextLessonNum = 1;
                 nextWeekday = nextWeekday === 7 ? 1 : nextWeekday + 1;
 
