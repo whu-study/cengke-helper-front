@@ -172,32 +172,67 @@ const selectedFloor = ref<number | null>(null);
 // 将原始数据转换为四级结构
 const convertToFourLevelStructure = (buildings: any[]) => {
   return buildings.map(building => {
-    const floorMap = new Map<string, CourseInfo[]>();
-    
-    // 按楼层分组课程
-    building.infos.forEach((course: CourseInfo) => {
-      const room = course.room;
-      // 提取楼层信息（假设房间号格式如 A101, B205 等）
-      const floorMatch = room.match(/([A-Z])(\d)/);
-      const floorName = floorMatch ? `${floorMatch[1]}楼 ${floorMatch[2]}层` : '其他楼层';
-      
-      if (!floorMap.has(floorName)) {
-        floorMap.set(floorName, []);
+    // 如果后端已经提供了 floors，直接使用并保证格式
+    if (building.floors && Array.isArray(building.floors) && building.floors.length > 0) {
+      const floors: FloorInfo[] = building.floors.map((f: any) => ({
+        floorName: f.floorName || `第${f.floorNumber || 0}层`,
+        rooms: Array.isArray(f.rooms) ? f.rooms : (f.rooms ? [f.rooms] : []),
+        courses: Array.isArray(f.courses) ? f.courses : []
+      }));
+
+      const totalCourses = floors.reduce((sum: number, fl: any) => sum + (fl.courses?.length || 0), 0) || (building.infos?.length || 0);
+
+      return {
+        building: building.building,
+        floors,
+        totalCourses
+      } as ExtendedBuildingInfo;
+    }
+
+    // 否则使用兼容回退：从 infos 推断楼层（兼容旧数据）
+    const floorMap = new Map<string, { floorNumber: number; courses: CourseInfo[] }>();
+
+    (building.infos || []).forEach((course: CourseInfo) => {
+      const room = course.room || '';
+      let floorNumber = 0;
+
+      // 纯数字房间号，例如 108 -> 楼层 1
+      if (/^\d+$/.test(room)) {
+        const n = parseInt(room, 10);
+        floorNumber = Math.floor(n / 100) || 1;
+      } else {
+        // 提取连续数字，例如 A101 或 5-教108 中的 101/108
+        const digits = room.match(/(\d{2,3})/);
+        if (digits && digits[1]) {
+          const n = parseInt(digits[1], 10);
+          floorNumber = Math.floor(n / 100) || parseInt(digits[1].charAt(0), 10) || 0;
+        } else {
+          // 最后尝试提取单个数字
+          const single = room.match(/(\d)/);
+          floorNumber = single ? parseInt(single[1], 10) : 0;
+        }
       }
-      floorMap.get(floorName)!.push(course);
+
+      const floorName = floorNumber > 0 ? `第${floorNumber}层` : '其他楼层';
+
+      if (!floorMap.has(floorName)) {
+        floorMap.set(floorName, { floorNumber, courses: [] });
+      }
+      floorMap.get(floorName)!.courses.push(course);
     });
 
-    // 转换为楼层结构
-    const floors: FloorInfo[] = Array.from(floorMap.entries()).map(([floorName, courses]) => ({
+    const floors: FloorInfo[] = Array.from(floorMap.entries()).map(([floorName, info]) => ({
       floorName,
-      rooms: [...new Set(courses.map(c => c.room))],
-      courses
+      rooms: [...new Set(info.courses.map(c => c.room).filter(Boolean))],
+      courses: info.courses
     }));
+
+    const totalCourses = floors.reduce((sum, fl) => sum + (fl.courses?.length || 0), 0) || (building.infos?.length || 0);
 
     return {
       building: building.building,
       floors,
-      totalCourses: building.infos.length
+      totalCourses
     } as ExtendedBuildingInfo;
   });
 };

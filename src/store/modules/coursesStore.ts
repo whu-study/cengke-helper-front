@@ -88,29 +88,39 @@ export const useCourseStore = defineStore('course', () => {
             }
         });
 
-        // 去重逻辑：基于课程ID + 课程名 + 教师名的组合去重
-        const uniqueCourses = new Map<string, CourseInfo>();
+        // 去重逻辑：基于课程名+教师名+学院去重，但保留不同教室信息为数组而不直接拼接字符串
+        const uniqueCourses = new Map<string, CourseInfo & { rooms?: string[] }>();
         courses.forEach(course => {
-            // 创建唯一键：课程名 + 教师名 + 学院（移除ID，因为相同课程可能有不同ID）
             const uniqueKey = `${course.courseName}-${course.teacherName}-${course.faculty}`;
             if (!uniqueCourses.has(uniqueKey)) {
-                uniqueCourses.set(uniqueKey, course);
+                // 初始化时保留原始 room 并创建 rooms 数组
+                const copy: CourseInfo & { rooms?: string[] } = { ...course };
+                copy.rooms = copy.rooms || (copy.room ? [copy.room] : []);
+                uniqueCourses.set(uniqueKey, copy);
             } else {
-                // 如果发现重复，合并教室信息和时间信息
-                const existingCourse = uniqueCourses.get(uniqueKey);
+                const existingCourse = uniqueCourses.get(uniqueKey)!;
                 console.log(`Merging duplicate course: ${course.courseName} by ${course.teacherName}`);
-                if (existingCourse && existingCourse.room !== course.room) {
-                    // 合并多个教室信息
-                    existingCourse.room = `${existingCourse.room}, ${course.room}`;
+                // 合并 rooms 数组，去重
+                existingCourse.rooms = existingCourse.rooms || (existingCourse.room ? [existingCourse.room] : []);
+                if (course.room && !existingCourse.rooms.includes(course.room)) {
+                    existingCourse.rooms.push(course.room);
                 }
-                if (existingCourse && existingCourse.courseTime !== course.courseTime) {
-                    // 合并多个时间信息
-                    existingCourse.courseTime = `${existingCourse.courseTime}; ${course.courseTime}`;
+                // 保留第一条 courseTime（避免显示过长串），如果需要可在UI上展示所有时间
+                if (!existingCourse.courseTime && course.courseTime) {
+                    existingCourse.courseTime = course.courseTime;
                 }
             }
         });
 
-        allCoursesFlatList.value = Array.from(uniqueCourses.values());
+        // 把 rooms 数组转换为前端可显示的格式（保留 room 字段为首个教室）
+        allCoursesFlatList.value = Array.from(uniqueCourses.values()).map(c => {
+            // ensure room is the first room
+            const copy = { ...c } as CourseInfo & { rooms?: string[] };
+            if (copy.rooms && copy.rooms.length > 0) {
+                copy.room = copy.rooms[0];
+            }
+            return copy;
+        });
         console.log('All courses flat list after deduplication:', allCoursesFlatList.value);
         console.log(`Total courses after deduplication: ${allCoursesFlatList.value.length}`);
 

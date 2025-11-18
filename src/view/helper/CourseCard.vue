@@ -53,9 +53,9 @@ const onClick = () => {
     <!-- PC端布局 -->
     <div v-if="!isMobile" class="pc-card-content">
       <div class="pc-card-header">
-        <div class="room-info">
+          <div class="room-info">
           <el-icon class="room-icon"><LocationFilled /></el-icon>
-          <span class="room-text multi-room">{{ courseInfoRef.room }}</span>
+          <span class="room-text multi-room">{{ courseInfoRef.rooms && courseInfoRef.rooms.length ? courseInfoRef.rooms.join(' / ') : courseInfoRef.room }}</span>
         </div>
         <div class="course-type-badge" :class="getTypeClass()">
           {{ courseInfoRef.courseType }}
@@ -85,7 +85,7 @@ const onClick = () => {
     <!-- 移动端布局：保持原有设计 -->
     <div v-else class="mobile-card-content">
       <div class="mobile-card-header">
-        <div class="room">{{ courseInfoRef.room }}</div>
+      <div class="room">{{ courseInfoRef.rooms && courseInfoRef.rooms.length ? courseInfoRef.rooms.join(' / ') : courseInfoRef.room }}</div>
         <div></div>
         <div class="course-type" :class="getTypeClass()">
           {{ courseInfoRef.courseType }}

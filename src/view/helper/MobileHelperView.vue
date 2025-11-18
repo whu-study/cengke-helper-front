@@ -169,26 +169,43 @@ const currentFloors = computed(() => {
   
   // 否则从infos中提取楼层信息（兼容旧数据）
   if (building?.infos) {
-    const floorMap = new Map<string, CourseInfo[]>();
-    
+    const floorMap = new Map<string, { floorNumber: number; courses: CourseInfo[] }>();
+
     building.infos.forEach((course: CourseInfo) => {
-      const room = course.room;
-      // 提取楼层信息
-      const floorMatch = room.match(/([A-Z])(\d)/);
-      const floorName = floorMatch ? `${floorMatch[1]}楼${floorMatch[2]}层` : '其他楼层';
-      
-      if (!floorMap.has(floorName)) {
-        floorMap.set(floorName, []);
+      const room = course.room || '';
+      let floorNumber = 0;
+
+      // 如果房间号纯数字，例如 108 -> 楼层 1
+      if (/^\d+$/.test(room)) {
+        const n = parseInt(room, 10);
+        floorNumber = Math.floor(n / 100) || 1;
+      } else {
+        // 提取连续数字，例如 A101 或 5-教108 中的 101/108
+        const digits = room.match(/(\d{2,3})/);
+        if (digits && digits[1]) {
+          const n = parseInt(digits[1], 10);
+          floorNumber = Math.floor(n / 100) || parseInt(digits[1].charAt(0), 10) || 0;
+        } else {
+          // 最后尝试提取单个数字
+          const single = room.match(/(\d)/);
+          floorNumber = single ? parseInt(single[1], 10) : 0;
+        }
       }
-      floorMap.get(floorName)!.push(course);
+
+      const floorName = floorNumber > 0 ? `第${floorNumber}层` : '其他楼层';
+
+      if (!floorMap.has(floorName)) {
+        floorMap.set(floorName, { floorNumber, courses: [] });
+      }
+      floorMap.get(floorName)!.courses.push(course);
     });
-    
-    // 转换为楼层结构
-    return Array.from(floorMap.entries()).map(([floorName, courses]) => ({
+
+    // 转换为楼层结构，保证 rooms 去重
+    return Array.from(floorMap.entries()).map(([floorName, info]) => ({
       floorName,
-      floorNumber: parseInt(floorName.match(/(\d)/)?.[1] || '0'),
-      rooms: [...new Set(courses.map(c => c.room))],
-      courses
+      floorNumber: info.floorNumber || 0,
+      rooms: [...new Set(info.courses.map(c => c.room).filter(Boolean))],
+      courses: info.courses
     }));
   }
   

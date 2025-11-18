@@ -3,6 +3,7 @@ import type { UserProfile } from '@/types/user';
 export interface CourseInfo {
     id: number;
     room: string;
+    rooms?: string[]; // 可选：同一门课可能在多个教室，保留为数组以便展示与过滤
     faculty: string;
     courseName: string;
     teacherName: string;
