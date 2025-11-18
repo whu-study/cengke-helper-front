@@ -234,7 +234,7 @@
           <div class="recent-users-list">
             <div
               v-for="user in recentUsers"
-              :key="user.id"
+              :key="user.userId"
               class="user-item"
             >
               <el-avatar :size="32" :src="user.avatar">
@@ -242,7 +242,7 @@
               </el-avatar>
               <div class="user-info">
                 <div class="username">{{ user.username }}</div>
-                <div class="user-role">{{ user.role }}</div>
+                <div class="user-role">帖子: {{ user.postCount }}</div>
               </div>
               <div class="user-status online"></div>
             </div>
@@ -259,6 +259,7 @@ import { useRouter } from 'vue-router';
 import { usePostsStore } from '@/store/modules/postsStore';
 import { useUserStore } from '@/store/modules/userStore';
 import type { GetPostsParams } from '@/api/postService';
+import { apiGetActiveUsers, type ActiveUserVO } from '@/api/postService';
 import type { Post } from '@/types/discuss';
 import PostList from '@/components/post/PostList.vue';
 import {
@@ -301,12 +302,8 @@ const currentApiParams = ref<GetPostsParams>({
 const hotTags = ref(['JavaScript', 'Vue.js', '数据结构', '算法', '前端开发', '后端开发']);
 const onlineUsers = ref(128);
 const todayPosts = ref(15);
-const recentUsers = ref([
-  { id: 1, username: '学习小能手', role: '活跃用户', avatar: '' },
-  { id: 2, username: '代码达人', role: '版主', avatar: '' },
-  { id: 3, username: '知识分享者', role: '普通用户', avatar: '' },
-  { id: 4, username: '技术探索者', role: '活跃用户', avatar: '' },
-]);
+const recentUsers = ref<ActiveUserVO[]>([]);
+const recentUsersLoading = ref(false);
 
 // 方法
 const navigateToCreatePost = () => {
@@ -353,6 +350,28 @@ const handleSortChange = (sortBy: string) => {
   currentApiParams.value.sortBy = sortBy;
   currentApiParams.value.page = 1;
   fetchData();
+};
+
+// 获取活跃用户
+const fetchActiveUsers = async () => {
+  recentUsersLoading.value = true;
+  try {
+    const res = await apiGetActiveUsers();
+    if (res.code === 0 && Array.isArray(res.data)) {
+      recentUsers.value = res.data.map(u => ({
+        userId: u.userId,
+        username: u.username,
+        avatar: u.avatar || '',
+        postCount: u.postCount || 0
+      }));
+    } else {
+      console.warn('获取活跃用户失败', res.msg);
+    }
+  } catch (err) {
+    console.error('fetchActiveUsers error', err);
+  } finally {
+    recentUsersLoading.value = false;
+  }
 };
 
 const handleCategoryChange = (category: string) => {
@@ -442,6 +461,11 @@ onMounted(() => {
   // 获取数据
   fetchData();
   fetchHotPosts();
+});
+
+// 在组件挂载后请求活跃用户
+onMounted(() => {
+  fetchActiveUsers();
 });
 </script>
 

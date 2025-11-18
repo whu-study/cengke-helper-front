@@ -2,7 +2,7 @@
 import { myRequest } from './myAxios'; // 假设 myAxios.ts 在同级目录 (Assuming myAxios.ts is in the same directory)
 import { apiPrefix } from './globalConst';
 import type { Post } from '@/types/discuss';
-import type {TransDef} from "@/api/type.ts"; // 导入帖子和作者类型 (Import Post and Author types)
+import type { TransDef } from "@/api/type.ts"; // 导入帖子和作者类型 (Import Post and Author types)
 // import type {UserProfile as AuthorInfo} from "@/types/user.ts";
 // --- 请求体和响应数据的特定类型定义 ---
 // (Request body and response data specific type definitions)
@@ -158,6 +158,24 @@ export const apiToggleCollectPost = (id: string | number, /* currentUserId?: str
         method: 'POST',
         url: `${apiPrefix}/posts/${id}/toggle-collect`,
         // data: { userId: currentUserId } // 如果后端需要知道是哪个用户操作的 (If backend needs to know which user performed the action)
+    });
+};
+
+// 活跃用户列表
+export interface ActiveUserVO {
+    userId: number;
+    username: string;
+    avatar?: string;
+    postCount: number;
+}
+
+/**
+ * 获取活跃用户列表
+ */
+export const apiGetActiveUsers = (): Promise<TransDef<ActiveUserVO[]>> => {
+    return myRequest<never, ActiveUserVO[]>({
+        method: 'GET',
+        url: `${apiPrefix}/posts/active-users`,
     });
 };
 
