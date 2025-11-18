@@ -179,3 +179,34 @@ export const apiGetActiveUsers = (): Promise<TransDef<ActiveUserVO[]>> => {
     });
 };
 
+// 社区统计信息
+export interface CommunityStatsVO {
+    totalPosts: number;
+    totalUsers: number;
+    todayNewPosts: number;
+}
+
+/**
+ * 获取社区统计信息
+ */
+export const apiGetCommunityStats = (): Promise<TransDef<CommunityStatsVO>> => {
+    return myRequest<never, CommunityStatsVO>({
+        method: 'GET',
+        url: `${apiPrefix}/community/stats`,
+    });
+};
+
+// 社区概览（包含课程与帖子相关的统计）
+export interface CommunityOverviewVO {
+    currentPeriodCourses: number; // 当前时段课程总数
+    todayCourses: number; // 今日课程总数
+    todayPosts: number; // 今日帖子总数
+}
+
+export const apiGetCommunityOverview = (): Promise<TransDef<CommunityOverviewVO>> => {
+    return myRequest<never, CommunityOverviewVO>({
+        method: 'GET',
+        url: `${apiPrefix}/community/overview`,
+    });
+};
+

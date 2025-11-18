@@ -115,22 +115,29 @@
             </el-menu>
           </div>
 
-          <!-- 统计信息 -->
+          <!-- 统计信息（课程统计） -->
           <div v-if="!asideCollapsed" class="stats-section">
-            <h3>社区统计</h3>
+            <h3>课程统计</h3>
             <div class="stats-grid">
               <div class="stat-item">
                 <el-icon class="stat-icon"><Document /></el-icon>
                 <div>
-                  <div class="stat-number">{{ postsStore.pagination.totalPosts || 0 }}</div>
-                  <div class="stat-label">总帖子数</div>
+                  <div class="stat-number">{{ communityOverview.currentPeriodCourses }}</div>
+                  <div class="stat-label">当前时段课程总数</div>
+                </div>
+              </div>
+              <div class="stat-item">
+                <el-icon class="stat-icon"><Calendar /></el-icon>
+                <div>
+                  <div class="stat-number">{{ communityOverview.todayPosts }}</div>
+                  <div class="stat-label">今日帖子总数</div>
                 </div>
               </div>
               <div class="stat-item">
                 <el-icon class="stat-icon"><User /></el-icon>
                 <div>
-                  <div class="stat-number">在线用户</div>
-                  <div class="stat-label">社区活跃</div>
+                  <div class="stat-number">{{ communityOverview.todayCourses }}</div>
+                  <div class="stat-label">今日课程总数</div>
                 </div>
               </div>
             </div>
@@ -151,6 +158,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useUserStore } from '@/store/modules/userStore';
 import { usePostsStore } from '@/store/modules/postsStore';
+import { apiGetCommunityOverview } from '@/api/postService';
 import {
   House,
   ChatDotSquare,
@@ -220,10 +228,34 @@ const goToLogin = () => {
 onMounted(() => {
   // 初始化时可以加载一些统计数据
   if (postsStore.pagination.totalPosts === 0) {
-    // 只获取统计信息，不加载具体帖子
+    // 只获取帖子计数，保留原有逻辑作为回退
     postsStore.fetchPosts({ page: 1, limit: 1 });
   }
+  // 获取课程与帖子概览（用于侧边栏课程统计）
+  fetchCommunityOverview();
 });
+
+// 侧边栏展示的课程/帖子概览
+const communityOverview = ref<{ currentPeriodCourses: number; todayCourses: number; todayPosts: number }>({
+  currentPeriodCourses: 0,
+  todayCourses: 0,
+  todayPosts: 0,
+});
+
+const fetchCommunityOverview = async () => {
+  try {
+    const res = await apiGetCommunityOverview();
+    if (res.code === 0 && res.data) {
+      communityOverview.value.currentPeriodCourses = Number(res.data.currentPeriodCourses || 0);
+      communityOverview.value.todayCourses = Number(res.data.todayCourses || 0);
+      communityOverview.value.todayPosts = Number(res.data.todayPosts || 0);
+    } else {
+      console.warn('获取社区概览失败', res.msg);
+    }
+  } catch (err) {
+    console.error('fetchCommunityOverview error', err);
+  }
+};
 </script>
 
 <style scoped lang="scss">

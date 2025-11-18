@@ -146,31 +146,31 @@
           </div>
         </el-card>
 
-        <!-- 统计信息 -->
+        <!-- 统计信息（课程与帖子概览） -->
         <el-card class="stats-card" shadow="hover">
           <template #header>
-            <h3>社区统计</h3>
+            <h3>课程概览</h3>
           </template>
           <div class="stats-grid">
             <div class="stat-item">
               <el-icon class="stat-icon"><Document /></el-icon>
               <div class="stat-content">
-                <div class="stat-number">{{ postsStore.pagination.totalPosts || 0 }}</div>
-                <div class="stat-label">帖子总数</div>
-              </div>
-            </div>
-            <div class="stat-item">
-              <el-icon class="stat-icon"><ChatDotSquare /></el-icon>
-              <div class="stat-content">
-                <div class="stat-number">{{ totalComments }}</div>
-                <div class="stat-label">讨论总数</div>
+                <div class="stat-number">{{ communityOverview.currentPeriodCourses }}</div>
+                <div class="stat-label">当前时段课程总数</div>
               </div>
             </div>
             <div class="stat-item">
               <el-icon class="stat-icon"><Star /></el-icon>
               <div class="stat-content">
-                <div class="stat-number">{{ coursesStore.allCoursesFlatList.length }}</div>
-                <div class="stat-label">课程数量</div>
+                <div class="stat-number">{{ communityOverview.todayCourses }}</div>
+                <div class="stat-label">今日课程总数</div>
+              </div>
+            </div>
+            <div class="stat-item">
+              <el-icon class="stat-icon"><ChatDotSquare /></el-icon>
+              <div class="stat-content">
+                <div class="stat-number">{{ communityOverview.todayPosts }}</div>
+                <div class="stat-label">今日帖子总数</div>
               </div>
             </div>
           </div>
@@ -365,6 +365,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
+import { apiGetCommunityOverview } from '@/api/postService';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useCourseStore } from "@/store/modules/coursesStore";
@@ -429,9 +430,7 @@ const prefillTagsForCreatePost = ref<string[]>([]);
 const currentCourseName = computed(() => currentCourseInfo.value?.courseName || '');
 const currentCourseId = computed(() => currentCourseInfo.value?.id || null);
 
-const totalComments = computed(() => {
-  return recentPosts.value.reduce((total, post) => total + (post.commentsCount || 0), 0);
-});
+// totalComments 已移除，使用后端概览替代页面右侧统计
 
 const hotTags = ref([
   { name: '数学', count: 156 },
@@ -497,6 +496,28 @@ const fetchRecentPosts = async () => {
     console.error('获取最新帖子失败:', error);
   } finally {
     recentPostsLoading.value = false;
+  }
+};
+
+// 社区课程概览（用于右侧统计卡）
+const communityOverview = ref<{ currentPeriodCourses: number; todayCourses: number; todayPosts: number }>({
+  currentPeriodCourses: 0,
+  todayCourses: 0,
+  todayPosts: 0,
+});
+
+const fetchCommunityOverview = async () => {
+  try {
+    const res = await apiGetCommunityOverview();
+    if (res.code === 0 && res.data) {
+      communityOverview.value.currentPeriodCourses = Number(res.data.currentPeriodCourses || 0);
+      communityOverview.value.todayCourses = Number(res.data.todayCourses || 0);
+      communityOverview.value.todayPosts = Number(res.data.todayPosts || 0);
+    } else {
+      console.warn('获取社区概览信息失败', res.msg);
+    }
+  } catch (err) {
+    console.error('fetchCommunityOverview error', err);
   }
 };
 
@@ -600,6 +621,7 @@ watch(currentCourseInfo, (newCourseInfo) => {
 onMounted(() => {
   // 初始加载数据
   fetchRecentPosts();
+  fetchCommunityOverview();
   
   // 主页统一负责加载课程数据
   if (coursesStore.allCoursesFlatList.length === 0 && 

@@ -190,7 +190,7 @@
           </div>
         </el-card>
 
-        <!-- 统计信息 -->
+        <!-- 统计信息（讨论区 - 社区统计） -->
         <el-card class="stats-card" shadow="hover">
           <template #header>
             <h3>社区数据</h3>
@@ -201,7 +201,7 @@
                 <el-icon><Document /></el-icon>
               </div>
               <div class="stat-content">
-                <div class="stat-number">{{ postsStore.pagination.totalPosts || 0 }}</div>
+                <div class="stat-number">{{ communityStats.totalPosts || postsStore.pagination.totalPosts || 0 }}</div>
                 <div class="stat-label">总帖子</div>
               </div>
             </div>
@@ -210,8 +210,8 @@
                 <el-icon><User /></el-icon>
               </div>
               <div class="stat-content">
-                <div class="stat-number">{{ onlineUsers }}</div>
-                <div class="stat-label">在线用户</div>
+                <div class="stat-number">{{ communityStats.totalUsers }}</div>
+                <div class="stat-label">注册用户</div>
               </div>
             </div>
             <div class="stat-item">
@@ -219,7 +219,7 @@
                 <el-icon><Calendar /></el-icon>
               </div>
               <div class="stat-content">
-                <div class="stat-number">{{ todayPosts }}</div>
+                <div class="stat-number">{{ communityStats.todayNewPosts }}</div>
                 <div class="stat-label">今日新帖</div>
               </div>
             </div>
@@ -259,7 +259,7 @@ import { useRouter } from 'vue-router';
 import { usePostsStore } from '@/store/modules/postsStore';
 import { useUserStore } from '@/store/modules/userStore';
 import type { GetPostsParams } from '@/api/postService';
-import { apiGetActiveUsers, type ActiveUserVO } from '@/api/postService';
+import { apiGetActiveUsers, apiGetCommunityStats, type ActiveUserVO } from '@/api/postService';
 import type { Post } from '@/types/discuss';
 import PostList from '@/components/post/PostList.vue';
 import {
@@ -300,8 +300,11 @@ const currentApiParams = ref<GetPostsParams>({
 
 // 模拟数据
 const hotTags = ref(['JavaScript', 'Vue.js', '数据结构', '算法', '前端开发', '后端开发']);
-const onlineUsers = ref(128);
-const todayPosts = ref(15);
+const communityStats = ref<{ totalPosts: number; totalUsers: number; todayNewPosts: number }>({
+  totalPosts: 0,
+  totalUsers: 0,
+  todayNewPosts: 0,
+});
 const recentUsers = ref<ActiveUserVO[]>([]);
 const recentUsersLoading = ref(false);
 
@@ -371,6 +374,23 @@ const fetchActiveUsers = async () => {
     console.error('fetchActiveUsers error', err);
   } finally {
     recentUsersLoading.value = false;
+  }
+};
+
+// 获取社区统计信息（讨论区侧栏）
+const fetchCommunityStats = async () => {
+  try {
+    const res = await apiGetCommunityStats();
+    if (res.code === 0 && res.data) {
+      const d = res.data;
+      communityStats.value.totalPosts = Number(d.totalPosts || 0);
+      communityStats.value.totalUsers = Number(d.totalUsers || 0);
+      communityStats.value.todayNewPosts = Number(d.todayNewPosts || 0);
+    } else {
+      console.warn('获取社区统计信息失败', res.msg);
+    }
+  } catch (err) {
+    console.error('fetchCommunityStats error', err);
   }
 };
 
@@ -466,6 +486,7 @@ onMounted(() => {
 // 在组件挂载后请求活跃用户
 onMounted(() => {
   fetchActiveUsers();
+  fetchCommunityStats();
 });
 </script>
 
