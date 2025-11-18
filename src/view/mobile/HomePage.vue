@@ -548,7 +548,9 @@ const handlePostCreated = async (payload: CreatePostBody) => { // [修改点] �
 }
 
 .review-toggle-button {
-  // 特殊样式可在此添加
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .embedded-review-form {
@@ -571,8 +573,8 @@ const handlePostCreated = async (payload: CreatePostBody) => { // [修改点] �
 }
 
 .reviews-list {
-  // max-height: 450px; // 可选：如果评价很多，限制高度并滚动
-  // overflow-y: auto;
+  max-height: 450px; /* 如果评价很多，限制高度并滚动 */
+  overflow-y: auto;
 }
 
 .loading-indicator,
