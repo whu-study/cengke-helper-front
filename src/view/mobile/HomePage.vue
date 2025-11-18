@@ -51,6 +51,12 @@ const postsPageSize = ref(5); // 每页加载5个帖子
 const totalRelatedPosts = ref(0);
 const allPostsLoaded = ref(false);
 const prefillTagsForCreatePost = ref<string[]>([]);
+const activeTab = ref('page1'); // 当前活跃的标签页
+
+// 切换到课程筛选页面
+const switchToFilterPage = () => {
+  activeTab.value = 'page2';
+};
 
 onMounted(() => {
   // 移动端主页统一负责加载课程数据
@@ -397,9 +403,9 @@ const handlePostCreated = async (payload: CreatePostBody) => { // [修改点] �
     </div>
   </div>
   <n-divider />
-  <n-tabs type="segment" animated>
+  <n-tabs v-model:value="activeTab" type="segment" animated>
       <n-tab-pane name="page1" tab="小助手首页">
-        <HelperRoot/>
+        <HelperRoot @switch-to-filter="switchToFilterPage" />
 
       </n-tab-pane>
       <n-tab-pane name="page2" tab="课程筛选">

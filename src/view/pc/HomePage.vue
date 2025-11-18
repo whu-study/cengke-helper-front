@@ -30,7 +30,7 @@
           <el-tabs v-model="activeTab" @tab-click="handleTabClick">
             <el-tab-pane label="小助手首页" name="helper">
               <div class="helper-root-wrapper">
-                <HelperRoot/>
+                <HelperRoot @switch-to-filter="switchToFilterPage" />
               </div>
             </el-tab-pane>
             <el-tab-pane label="课程筛选" name="filter">
@@ -445,6 +445,11 @@ const hotTags = ref([
 // 方法
 const handleTabClick = (tab: any) => {
   console.log('Tab clicked:', tab.paneName);
+};
+
+// 切换到课程筛选页面
+const switchToFilterPage = () => {
+  activeTab.value = 'filter';
 };
 
 const goToDiscuss = () => {

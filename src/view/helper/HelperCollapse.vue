@@ -20,6 +20,55 @@
         </template>
       </el-alert>
     </div>
+
+    <!-- 全局空状态：当前时间没有任何课程 -->
+    <div v-else-if="hasAttemptedFetch && allCoursesEmpty" class="global-empty-state">
+      <el-empty 
+        :image-size="200"
+        description=""
+      >
+        <template #description>
+          <div class="empty-description">
+            <h3>当前时间暂无课程安排</h3>
+            <p class="empty-subtitle">
+              {{ currentTimeInfo ? 
+                `第${currentTimeInfo.weekNum}周 ${weekdayNames[currentTimeInfo.weekday]} 第${currentTimeInfo.lessonNum}节` : 
+                '当前时段' 
+              }}没有课程
+            </p>
+            <div class="empty-suggestions">
+              <p>您可以：</p>
+              <ul>
+                <li>使用时间选择器查看其他时间的课程</li>
+                <li>切换到"课程筛选"页面浏览所有课程</li>
+                <li>稍后再来查看是否有新的课程安排</li>
+              </ul>
+            </div>
+          </div>
+        </template>
+        <template #default>
+          <div class="empty-actions">
+            <el-button 
+              type="primary" 
+              size="large" 
+              round
+              @click="retryLoad"
+              :icon="Refresh"
+            >
+              刷新课程数据
+            </el-button>
+            <el-button 
+              size="large" 
+              round
+              @click="handleViewAllCourses"
+              :icon="Search"
+            >
+              浏览所有课程
+            </el-button>
+          </div>
+        </template>
+      </el-empty>
+    </div>
     
     <!-- 正常内容 -->
     <div v-else class="helper-content">
@@ -37,6 +86,7 @@ import { computed, onMounted } from "vue";
 import PcHelperView from "./PcHelperView.vue";
 import MobileHelperView from "./MobileHelperView.vue";
 import { useCourseStore } from "@/store/modules/coursesStore";
+import { Refresh, Search } from '@element-plus/icons-vue';
 
 // 获取设备类型
 const isMobile = computed(() => {
@@ -45,6 +95,30 @@ const isMobile = computed(() => {
 });
 
 const useCourse = useCourseStore();
+
+// 计算属性
+const hasAttemptedFetch = computed(() => useCourse.hasAttemptedFetch);
+const currentTimeInfo = computed(() => useCourse.currentTimeInfo);
+
+// 判断是否所有课程都为空
+const allCoursesEmpty = computed(() => {
+  return useCourse.allCoursesFlatList.length === 0 && 
+         (!useCourse.courseData || useCourse.courseData.every(division => division.length === 0));
+});
+
+// 周几的名称映射
+const weekdayNames = ['', '周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+
+// 定义事件发射
+const emit = defineEmits<{
+  switchToFilter: []
+}>();
+
+// 事件处理方法
+const handleViewAllCourses = () => {
+  // 触发切换到课程筛选页面的事件
+  emit('switchToFilter');
+};
 
 // 重新加载数据
 const retryLoad = () => {
@@ -91,5 +165,140 @@ onMounted(() => {
 
 .helper-content {
   width: 100%;
+}
+
+.global-empty-state {
+  padding: 60px 40px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  
+  .empty-description {
+    margin-bottom: 32px;
+    
+    h3 {
+      font-size: 24px;
+      color: #303133;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+    
+    .empty-subtitle {
+      font-size: 16px;
+      color: #606266;
+      margin-bottom: 24px;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 8px 16px;
+      border-radius: 20px;
+      display: inline-block;
+      font-weight: 500;
+    }
+    
+    .empty-suggestions {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: left;
+      max-width: 400px;
+      margin: 0 auto;
+      
+      p {
+        font-size: 14px;
+        color: #409eff;
+        font-weight: 600;
+        margin-bottom: 12px;
+      }
+      
+      ul {
+        margin: 0;
+        padding-left: 20px;
+        
+        li {
+          font-size: 14px;
+          color: #606266;
+          line-height: 1.8;
+          margin-bottom: 6px;
+        }
+      }
+    }
+  }
+  
+  .empty-actions {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    
+    .el-button {
+      min-width: 140px;
+      height: 44px;
+      font-size: 15px;
+      font-weight: 500;
+      
+      &:first-child {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        
+        &:hover {
+          opacity: 0.9;
+          transform: translateY(-2px);
+        }
+      }
+      
+      &:last-child {
+        background: rgba(255, 255, 255, 0.9);
+        border: 2px solid #e4e7ed;
+        color: #606266;
+        
+        &:hover {
+          background: #fff;
+          border-color: #409eff;
+          color: #409eff;
+          transform: translateY(-2px);
+        }
+      }
+    }
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .global-empty-state {
+    padding: 40px 20px;
+    margin: 0 10px;
+    
+    .empty-description {
+      h3 {
+        font-size: 20px;
+      }
+      
+      .empty-subtitle {
+        font-size: 14px;
+      }
+      
+      .empty-suggestions {
+        padding: 16px;
+        
+        p {
+          font-size: 13px;
+        }
+        
+        ul li {
+          font-size: 13px;
+        }
+      }
+    }
+    
+    .empty-actions {
+      flex-direction: column;
+      align-items: center;
+      
+      .el-button {
+        width: 100%;
+        max-width: 280px;
+      }
+    }
+  }
 }
 </style>
