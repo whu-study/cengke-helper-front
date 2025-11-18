@@ -622,7 +622,7 @@ onMounted(() => {
   // 初始加载数据
   fetchRecentPosts();
   fetchCommunityOverview();
-  
+
   // 主页统一负责加载课程数据
   if (coursesStore.allCoursesFlatList.length === 0 && 
       !coursesStore.isLoading && 

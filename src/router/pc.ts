@@ -33,6 +33,13 @@ export const routes: Array<RouteRecordRaw> = [
                 component: () => import('@/view/pc/ProfilePage.vue'),
                 meta: { title: '个人中心' }
             },
+            // --- (新增) AI 助手路由 ---
+            {
+                path: 'agent',
+                name: 'Agent',
+                component: () => import('@/view/pc/AgentPage.vue'),
+                meta: { title: 'AI 助手' }
+            },
             {
                 path: 'profile/edit',
                 name: 'EditProfile',

@@ -21,6 +21,10 @@
             <el-icon><House /></el-icon>
             <span>小助手</span>
           </el-menu-item>
+          <el-menu-item index="/agent">
+            <el-icon><MagicStick /></el-icon>
+            <span>AI 助手</span>
+          </el-menu-item>
           <el-menu-item index="/discuss">
             <el-icon><ChatDotSquare /></el-icon>
             <span>讨论区</span>
@@ -98,6 +102,10 @@
                 <el-icon><House /></el-icon>
                 <span>课程小助手</span>
               </el-menu-item>
+              <el-menu-item index="/agent">
+                <el-icon><MagicStick /></el-icon>
+                <span>AI 助手</span>
+              </el-menu-item>
               <el-menu-item index="/discuss">
                 <el-icon><ChatDotSquare /></el-icon>
                 <span>社区讨论</span>
@@ -169,7 +177,8 @@ import {
   Edit,
   SwitchButton,
   Expand,
-  Fold
+  Fold,
+  MagicStick // (新增) 导入新图标
 } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 

@@ -12,6 +12,7 @@
     "@element-plus/icons-vue": "^2.3.1",
     "@tailwindcss/vite": "^4.0.12",
     "@types/node": "^22.13.10",
+    "@types/uuid": "^11.0.0",
     "@vicons/ionicons5": "^0.13.0",
     "axios": "^1.8.2",
     "crypto-js": "^4.2.0",
@@ -25,6 +26,7 @@
     "preline": "^3.0.0",
     "scss": "^0.2.4",
     "tailwindcss": "^4.0.12",
+    "uuid": "^13.0.0",
     "vant": "^4.9.18",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"

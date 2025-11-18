@@ -8,7 +8,10 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AgentChat: typeof import('./src/components/agent/AgentChat.vue')['default']
     AuthPage: typeof import('./src/components/login/AuthPage.vue')['default']
+    ChatInput: typeof import('./src/components/agent/ChatInput.vue')['default']
+    ChatWindow: typeof import('./src/components/agent/ChatWindow.vue')['default']
     CollectButton: typeof import('./src/components/CollectButton.vue')['default']
     CommentItem: typeof import('./src/components/comment/CommentItem.vue')['default']
     CommentList: typeof import('./src/components/comment/CommentList.vue')['default']
@@ -27,7 +30,6 @@ declare module 'vue' {
     ElCheckbox: typeof import('element-plus/es')['ElCheckbox']
     ElCol: typeof import('element-plus/es')['ElCol']
     ElContainer: typeof import('element-plus/es')['ElContainer']
-    ElDatePicker: typeof import('element-plus/es')['ElDatePicker']
     ElDialog: typeof import('element-plus/es')['ElDialog']
     ElDivider: typeof import('element-plus/es')['ElDivider']
     ElDrawer: typeof import('element-plus/es')['ElDrawer']
@@ -46,8 +48,6 @@ declare module 'vue' {
     ElMenuItem: typeof import('element-plus/es')['ElMenuItem']
     ElOption: typeof import('element-plus/es')['ElOption']
     ElPagination: typeof import('element-plus/es')['ElPagination']
-    ElRadio: typeof import('element-plus/es')['ElRadio']
-    ElRadioGroup: typeof import('element-plus/es')['ElRadioGroup']
     ElRate: typeof import('element-plus/es')['ElRate']
     ElRow: typeof import('element-plus/es')['ElRow']
     ElSegmented: typeof import('element-plus/es')['ElSegmented']
@@ -56,7 +56,6 @@ declare module 'vue' {
     ElTabPane: typeof import('element-plus/es')['ElTabPane']
     ElTabs: typeof import('element-plus/es')['ElTabs']
     ElTag: typeof import('element-plus/es')['ElTag']
-    ElUpload: typeof import('element-plus/es')['ElUpload']
     IdentifyCode: typeof import('./src/components/login/IdentifyCode.vue')['default']
     LikeButton: typeof import('./src/components/LikeButton.vue')['default']
     LoginPage: typeof import('./src/components/login/LoginPage.vue')['default']
@@ -71,8 +70,5 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     VanTabbar: typeof import('vant/es')['Tabbar']
     VanTabbarItem: typeof import('vant/es')['TabbarItem']
-  }
-  export interface ComponentCustomProperties {
-    vLoading: typeof import('element-plus/es')['ElLoadingDirective']
   }
 }
