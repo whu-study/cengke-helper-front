@@ -174,10 +174,14 @@ const handleNextLesson = async () => {
 };
 
 // 处理回到当前时间
-const handleResetToCurrent = () => {
-  coursesStore.resetToCurrentTime();
-  showTimeSelector.value = false;
-  ElMessage.success('已回到当前时间');
+const handleResetToCurrent = async () => {
+  try {
+    await coursesStore.resetToCurrentTime();
+    showTimeSelector.value = false;
+    ElMessage.success('已回到当前时间');
+  } catch (err) {
+    ElMessage.error('回到当前时间失败');
+  }
 };
 
 // 应用自定义时间

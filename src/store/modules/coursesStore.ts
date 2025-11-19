@@ -820,12 +820,19 @@ export const useCourseStore = defineStore('course', () => {
     }
 
     // 回到当前时间
-    function resetToCurrentTime() {
+    async function resetToCurrentTime() {
         selectedTimeQuery.value = null;
         isUsingCustomTime.value = false;
         // 重新获取当前时间的课程数据时允许重复请求
         hasAttemptedFetch.value = false;
-        fetchCourseData(undefined, true);
+        // 先刷新当前时间信息，确保 UI 上的周次/星期/节次显示同步
+        try {
+            await fetchCurrentTime();
+        } catch (err) {
+            console.warn('resetToCurrentTime: 刷新当前时间失败', err);
+        }
+        // 再刷新课程数据
+        await fetchCourseData(undefined, true);
     }
 
     // 获取下一节课的课程安排
